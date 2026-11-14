@@ -35,6 +35,10 @@ export const REFUSED_MESSAGE =
   "Cala refused the request (403 Forbidden). The API key may be out of credits, revoked or temporarily blocked. " +
   "Check it at console.cala.ai or ask the Cala team. No result was produced, so nothing here means \"no conflict\".";
 
+export const CREDITS_MESSAGE =
+  "Cala refused the request: this API key has run out of credits (402). Top up at console.cala.ai or ask the Cala team. " +
+  "No result was produced, so nothing here means \"no conflict\".";
+
 type GateListener = (event: "limited" | "resumed") => void;
 
 type Lane = "fast" | "slow";
@@ -146,7 +150,7 @@ export interface CalaHooks {
   onCacheHit?: (savedAt: number) => void;
   onLimited?: () => void;
   /** Cala refused the key (401/403). */
-  onRefused?: () => void;
+  onRefused?: (message: string) => void;
   onResumed?: () => void;
 }
 
@@ -228,9 +232,10 @@ export class Cala {
             await sleep(2000);
             continue;
           }
-          if (res.status === 401 || res.status === 403) {
-            this.hooks.onRefused?.();
-            throw new CalaError(res.status, REFUSED_MESSAGE);
+          if (res.status === 401 || res.status === 403 || res.status === 402) {
+            const message = res.status === 402 ? CREDITS_MESSAGE : REFUSED_MESSAGE;
+            this.hooks.onRefused?.(message);
+            throw new CalaError(res.status, message);
           }
           if (!res.ok) {
             const text = await res.text().catch(() => "");

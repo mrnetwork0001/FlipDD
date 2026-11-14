@@ -417,6 +417,7 @@ export async function analyze(
   let oldestCachedAt: number | undefined;
   /** Cala refused the key: the run stops with an error instead of reporting "nothing found". */
   let refused = false;
+  let refusedMessage = REFUSED_MESSAGE;
   const fresh = input.fresh === true;
   const step = (scope: string, text: string, state: StepState = "ok") =>
     emit({ type: "step", scope, text, state });
@@ -435,8 +436,9 @@ export async function analyze(
         stats();
       },
       onLimited: () => step("Cala", "Rate limit reached. Waiting for the window to reopen.", "wait"),
-      onRefused: () => {
+      onRefused: (message) => {
         refused = true;
+        refusedMessage = message;
       },
       onResumed: () => step("Cala", "Rate limit window reopened. Continuing.", "ok"),
     },
@@ -2142,7 +2144,7 @@ export async function analyze(
     });
     emitAll();
     if (refused) {
-      emit({ type: "error", message: REFUSED_MESSAGE });
+      emit({ type: "error", message: refusedMessage });
       return;
     }
 
@@ -2175,7 +2177,7 @@ export async function analyze(
 
     await Promise.allSettled([aiOn ? sharpenQuestions() : Promise.resolve(), findCleanInvestors(finderQuery)]);
     if (refused) {
-      emit({ type: "error", message: REFUSED_MESSAGE });
+      emit({ type: "error", message: refusedMessage });
       return;
     }
 
