@@ -27,10 +27,14 @@ export default function SpeakButton({
   const id = fixedId || autoId;
   const [supported, setSupported] = useState(false);
   const [on, setOn] = useState(false);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     setSupported(speechSupported());
     setOn(speakingId() === id);
-    return onSpeechChange((p) => setOn(p === id));
+    return onSpeechChange((p, f) => {
+      setOn(p === id);
+      setFailed(f === id);
+    });
   }, [id]);
   useEffect(() => () => {
     if (speakingId() === id) stopSpeaking();
@@ -52,11 +56,11 @@ export default function SpeakButton({
         else speak(id, typeof text === "function" ? text() : text);
       }}
       aria-pressed={on}
-      title={on ? "Stop" : label}
+      title={failed ? "This browser didn't play any speech. Check the volume, or try Chrome or Safari." : on ? "Stop" : label}
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${styles} ${className}`}
     >
       {on ? <Square className="h-3 w-3 fill-current" /> : <ListenGlyph size={13} />}
-      {on ? "Stop" : label}
+      {on ? "Stop" : failed ? "No sound? Tap to retry" : label}
       {on && (
         <span className="flex h-3 items-end gap-[2px]" aria-hidden>
           {[0, 1, 2].map((i) => (
