@@ -1,0 +1,163 @@
+{
+ "check": {
+  "file": "footage/check.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 540,
+  "marks": {
+   "check.load": 111,
+   "check.press": 214,
+   "check.done": 455
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "url": "localhost:3001/app",
+  "rects": {
+   "form": {
+    "x": 12,
+    "y": 89,
+    "w": 380,
+    "h": 931
+   },
+   "header": {
+    "x": 0,
+    "y": 0,
+    "w": 1600,
+    "h": 57
+   },
+   "scan": null
+  },
+  "header": "Gemini review\n90\nlive\ncache off\n8.0  \npowered by"
+ },
+ "find": {
+  "file": "footage/find.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 282,
+  "marks": {
+   "find.tab": 72,
+   "find.cards": 187
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "rects": {
+   "hero": {
+    "x": 424,
+    "y": 432,
+    "w": 1164,
+    "h": 172
+   },
+   "cards": {
+    "x": 424,
+    "y": 140,
+    "w": 1164,
+    "h": 731
+   }
+  }
+ },
+ "play": {
+  "file": "footage/play.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 180,
+  "marks": {
+   "play.press": 66
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "rects": {
+   "button": {
+    "x": 1464,
+    "y": 245,
+    "w": 103,
+    "h": 25
+   },
+   "panel": {
+    "x": 424,
+    "y": 140,
+    "w": 1164,
+    "h": 661
+   }
+  }
+ },
+ "round": {
+  "file": "footage/round.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 290,
+  "marks": {
+   "round.panel": 79,
+   "round.order": 205
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "rects": {
+   "panel": {
+    "x": 424,
+    "y": 90,
+    "w": 1164,
+    "h": 661
+   },
+   "headline": {
+    "x": 445,
+    "y": 135,
+    "w": 457,
+    "h": 36
+   },
+   "order": {
+    "x": 425,
+    "y": 200,
+    "w": 1162,
+    "h": 286
+   }
+  }
+ },
+ "ties": {
+  "file": "footage/ties.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 546,
+  "marks": {
+   "ties.creandum": 109,
+   "ties.northzone": 278,
+   "ties.atomico": 447
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "rects": {
+   "creandum": {
+    "x": 424,
+    "y": 110,
+    "w": 1164,
+    "h": 1114
+   },
+   "northzone": {
+    "x": 424,
+    "y": 110,
+    "w": 1164,
+    "h": 705
+   },
+   "atomico": {
+    "x": 424,
+    "y": 258,
+    "w": 1164,
+    "h": 659
+   }
+  }
+ }
+}
