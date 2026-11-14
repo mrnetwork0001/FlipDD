@@ -155,3 +155,40 @@ export function MicGlyph(p: P) {
     </Svg>
   );
 }
+
+/** The phone line: a handset with a live signal arc. */
+export function PhoneGlyph(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M3.6 1.9h2l1.1 2.8-1.4 1a7.4 7.4 0 0 0 3.6 3.6l1-1.4 2.8 1.1v2a1.5 1.5 0 0 1-1.6 1.5A10.6 10.6 0 0 1 2.1 3.5a1.5 1.5 0 0 1 1.5-1.6Z" />
+      <path d="M9.6 1.8a4.8 4.8 0 0 1 4.6 4.6" />
+      <path d="M9.4 4.3a2.4 2.4 0 0 1 2.3 2.3" />
+    </Svg>
+  );
+}
+
+/** A message sent: a folded paper plane, for chat (Telegram). */
+export function SendGlyph(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M14.4 1.6 1.6 6.8l5.1 2.1 2.1 5.1Z" />
+      <path d="M14.4 1.6 6.7 8.9" />
+    </Svg>
+  );
+}
+
+/**
+ * FlipDD's call mark: the handset in a red disc with two rings going out, as
+ * if the line is ringing. The rings stop for reduced motion.
+ */
+export function CallMark({ size = 104, className = "" }: { size?: number; className?: string }) {
+  return (
+    <span className={`relative inline-flex shrink-0 items-center justify-center ${className}`} style={{ width: size, height: size }} aria-hidden>
+      <span className="call-ring absolute inset-0 rounded-full border-2 border-signal/50" />
+      <span className="call-ring absolute inset-0 rounded-full border-2 border-signal/50" style={{ animationDelay: "1.1s" }} />
+      <span className="absolute inset-[14%] rounded-full bg-signal shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)]" />
+      <span className="absolute inset-[14%] rounded-full ring-1 ring-inset ring-white/25" />
+      <PhoneGlyph size={Math.round(size * 0.36)} className="call-shake relative text-white" strokeWidth={1.6} />
+    </span>
+  );
+}

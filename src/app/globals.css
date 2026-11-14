@@ -221,3 +221,23 @@
 }
 .voice-bar { height: 3px; animation: voice-bar 0.9s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .voice-bar { animation: none; height: 7px; } }
+
+/* Call mark on the landing page: rings going out, the handset nudging */
+@keyframes call-ring {
+  0% { transform: scale(0.72); opacity: 0.9; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.call-ring { animation: call-ring 2.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+@keyframes call-shake {
+  0%, 62%, 100% { transform: rotate(0); }
+  66% { transform: rotate(-12deg); }
+  70% { transform: rotate(10deg); }
+  74% { transform: rotate(-8deg); }
+  78% { transform: rotate(6deg); }
+  82% { transform: rotate(0); }
+}
+.call-shake { animation: call-shake 2.2s ease-in-out infinite; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) {
+  .call-ring { animation: none; opacity: 0.35; transform: scale(1.05); }
+  .call-shake { animation: none; }
+}
