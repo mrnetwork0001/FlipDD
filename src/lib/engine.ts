@@ -108,7 +108,7 @@ function hostOf(url: string): string {
   }
 }
 
-function toSources(raw: RawSource[] | undefined): SourceRef[] {
+export function toSources(raw: RawSource[] | undefined): SourceRef[] {
   if (!Array.isArray(raw)) return [];
   const out: SourceRef[] = [];
   const seen = new Set<string>();
@@ -150,12 +150,12 @@ function isArticleLike(s: SourceRef): boolean {
 }
 
 /** Earliest article date on an edge: the best available proxy for when it happened. */
-function edgeDate(sources: SourceRef[]): string | undefined {
+export function edgeDate(sources: SourceRef[]): string | undefined {
   const dates = sources.filter(isArticleLike).map((s) => s.date!).sort();
   return dates[0];
 }
 
-function bestSource(sources: SourceRef[]): SourceRef | undefined {
+export function bestSource(sources: SourceRef[]): SourceRef | undefined {
   return sources.find(isArticleLike) || sources.find((s) => s.url) || sources[0];
 }
 
@@ -307,7 +307,7 @@ function parseRound(e: RawEntity): RoundDetail {
   };
 }
 
-const ROUND_QUERY = {
+export const ROUND_QUERY = {
   properties: [
     "name",
     "round_label",
@@ -320,6 +320,28 @@ const ROUND_QUERY = {
     "event_date",
   ],
   relationships: { incoming: { PARTICIPATES_IN_FUNDING_ROUND: { limit: 50, offset: 0 } } },
+};
+
+// One query serves funds and people: Cala leaves out relationship types a
+// record does not have, so a fund returns its team and a person their roles.
+export const INVESTOR_QUERY = {
+  properties: ["name", "description", "website"],
+  relationships: {
+    outgoing: {
+      PARTICIPATES_IN_FUNDING_ROUND: { limit: REL_LIMIT, offset: 0 },
+      INVESTED_IN: { limit: REL_LIMIT, offset: 0 },
+      FOUNDED: { limit: 20, offset: 0 },
+      IS_CEO_OF: { limit: 20, offset: 0 },
+      IS_CTO_OF: { limit: 20, offset: 0 },
+      IS_BOARD_MEMBER_OF: { limit: 20, offset: 0 },
+      IS_EXECUTIVE_OF: { limit: 20, offset: 0 },
+      WORKS_AT: { limit: 20, offset: 0 },
+    },
+    incoming: {
+      WORKS_AT: { limit: 60, offset: 0 },
+      FOUNDED: { limit: 20, offset: 0 },
+    },
+  },
 };
 
 // ---------- similarity for the portfolio scan ----------
@@ -459,27 +481,6 @@ export async function analyze(
     return settled.flatMap((s) => (s.status === "fulfilled" ? [s.value] : []));
   }
 
-  // One query serves funds and people: Cala leaves out relationship types a
-  // record does not have, so a fund returns its team and a person their roles.
-  const INVESTOR_QUERY = {
-    properties: ["name", "description", "website"],
-    relationships: {
-      outgoing: {
-        PARTICIPATES_IN_FUNDING_ROUND: { limit: REL_LIMIT, offset: 0 },
-        INVESTED_IN: { limit: REL_LIMIT, offset: 0 },
-        FOUNDED: { limit: 20, offset: 0 },
-        IS_CEO_OF: { limit: 20, offset: 0 },
-        IS_CTO_OF: { limit: 20, offset: 0 },
-        IS_BOARD_MEMBER_OF: { limit: 20, offset: 0 },
-        IS_EXECUTIVE_OF: { limit: 20, offset: 0 },
-        WORKS_AT: { limit: 20, offset: 0 },
-      },
-      incoming: {
-        WORKS_AT: { limit: 60, offset: 0 },
-        FOUNDED: { limit: 20, offset: 0 },
-      },
-    },
-  };
   const investingWeight = (e: RawEntity) =>
     rel(e, "outgoing", "PARTICIPATES_IN_FUNDING_ROUND").length + rel(e, "outgoing", "INVESTED_IN").length;
 

@@ -263,7 +263,7 @@ export class Cala {
   /** Typed entity data with the requested properties and relationships. */
   async retrieve(
     id: string,
-    query: { properties?: string[]; relationships?: RelationshipQuery },
+    query: { properties?: string[]; relationships?: RelationshipQuery; numerical_observations?: Record<string, string[]> },
     priority = 0,
   ): Promise<RawEntity> {
     return this.request<RawEntity>("POST", `/entities/${id}`, query, priority, 60_000);
@@ -285,14 +285,20 @@ export class Cala {
   async introspect(
     id: string,
     priority = 3,
-  ): Promise<{ properties: string[]; relationships: { outgoing: string[]; incoming: string[] } }> {
+  ): Promise<{
+    properties: string[];
+    relationships: { outgoing: string[]; incoming: string[] };
+    numerical: Record<string, { id: string; name: string; unit?: string }[]>;
+  }> {
     const data = await this.request<{
       properties?: string[];
       relationships?: { outgoing?: string[]; incoming?: string[] };
+      numerical_observations?: Record<string, { id: string; name: string; unit?: string }[]>;
     }>("GET", `/entities/${id}/introspection`, undefined, priority, 45_000);
     return {
       properties: data.properties || [],
       relationships: { outgoing: data.relationships?.outgoing || [], incoming: data.relationships?.incoming || [] },
+      numerical: data.numerical_observations || {},
     };
   }
 
@@ -356,4 +362,14 @@ export interface RawEntity {
     outgoing?: Record<string, RawEdge[]>;
     incoming?: Record<string, RawEdge[]>;
   };
+  /** Time series asked for with numerical_observations: ARR, headcount, filed accounts. */
+  numerical_observations?: RawSeries[];
+}
+
+export interface RawSeries {
+  type?: string;
+  id: string;
+  name?: string;
+  properties?: Record<string, unknown>;
+  data?: { time: string; value: number; origin?: { name?: string; document?: string } | string }[];
 }
