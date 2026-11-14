@@ -1,0 +1,4 @@
+# ffmpeg turns Gemini's speech into the OGG/Opus voice messages Telegram plays.
+# Without it the bot still answers voice notes, in text only.
+[phases.setup]
+nixPkgs = ["...", "ffmpeg"]
