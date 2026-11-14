@@ -1577,7 +1577,7 @@ export default function AppPage() {
         </aside>
 
         {/* Results */}
-        <main className="min-w-0">
+        <main className="min-w-0 lg:pr-[4.25rem]">
           {/* Tabs */}
           {/* Phones and tablets: what is being checked, with the two actions that matter */}
           <div className="mb-4 flex items-center gap-2 rounded-2xl border border-line bg-card p-3 lg:hidden">
@@ -1962,7 +1962,7 @@ export default function AppPage() {
       {toast && (
         <div
           key={toast.key}
-          className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 flex items-center gap-3 rounded-xl bg-night px-4 py-3 text-sm text-paper shadow-xl animate-rise sm:left-auto sm:right-6"
+          className="fixed bottom-[calc(11.5rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 flex items-center gap-3 rounded-xl bg-night px-4 py-3 text-sm text-paper shadow-xl animate-rise sm:bottom-[5.5rem] sm:left-auto sm:right-24"
           role="status"
         >
           <Check className="h-4 w-4 text-[#7CC4A4]" />
@@ -1980,7 +1980,7 @@ export default function AppPage() {
           </button>
         </div>
       )}
-      <ContactDock desktopLeft={formCollapsed ? "" : "lg:left-[412px]"} />
+      <ContactDock raised />
     </div>
   );
 }

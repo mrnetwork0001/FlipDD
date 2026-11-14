@@ -1,7 +1,7 @@
 "use client";
 
-// Bottom-left: FlipDD on Telegram, and the phone line once it has a number.
-// Sits under dialogs (z-40) and away from the meeting list button (bottom-right).
+// Bottom-right: FlipDD on Telegram, and the phone line. Under dialogs (z-40);
+// in the app it stacks above the meeting list button.
 
 import { PHONE_NUMBER, TELEGRAM_BOT, telegramUrl } from "@/lib/contact";
 import { PhoneGlyph } from "./Glyphs";
@@ -19,9 +19,13 @@ function TelegramMark({ size = 26 }: { size?: number }) {
   );
 }
 
-export default function ContactDock({ desktopLeft }: { /** Desktop offset, so the dock clears a left column (the app's form). */ desktopLeft?: string }) {
+export default function ContactDock({ raised }: { /** Sit above the app's meeting list button. */ raised?: boolean }) {
   return (
-    <div className={`pointer-events-none fixed bottom-4 left-4 z-40 flex flex-col gap-2.5 pb-[env(safe-area-inset-bottom)] sm:bottom-6 sm:left-6 ${desktopLeft || ""}`}>
+    <div
+      className={`pointer-events-none fixed right-4 z-40 flex flex-col items-end gap-2.5 sm:right-6 ${
+        raised ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-[5.25rem]" : "bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:bottom-6"
+      }`}
+    >
       {/* The phone line: a real call once NEXT_PUBLIC_PHONE_NUMBER is set; until then it explains the line. */}
       <a
         href={PHONE_NUMBER ? `tel:${PHONE_NUMBER.replace(/[^\d+]/g, "")}` : "/#go"}
@@ -30,7 +34,7 @@ export default function ContactDock({ desktopLeft }: { /** Desktop offset, so th
       >
         {PHONE_NUMBER && <span className="call-ring absolute inset-0 rounded-full border-2 border-signal/50" aria-hidden />}
         <PhoneGlyph size={20} strokeWidth={1.7} />
-        <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-paper opacity-0 shadow-lg transition group-hover:opacity-100">
+        <span className="pointer-events-none absolute right-14 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-paper opacity-0 shadow-lg transition group-hover:opacity-100">
           {PHONE_NUMBER ? `Call FlipDD · ${PHONE_NUMBER}` : "Phone line · number coming soon"}
         </span>
       </a>
@@ -42,7 +46,7 @@ export default function ContactDock({ desktopLeft }: { /** Desktop offset, so th
         aria-label={`Open FlipDD on Telegram (@${TELEGRAM_BOT})`}
       >
         <TelegramMark size={48} />
-        <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-paper opacity-0 shadow-lg transition group-hover:opacity-100">
+        <span className="pointer-events-none absolute right-14 whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-paper opacity-0 shadow-lg transition group-hover:opacity-100">
           FlipDD on Telegram · @{TELEGRAM_BOT}
         </span>
       </a>
