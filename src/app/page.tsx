@@ -9,6 +9,7 @@ import RunTerminal from "@/components/RunTerminal";
 import CalaLogo from "@/components/CalaLogo";
 import FlipLogo from "@/components/FlipLogo";
 import MobileNav from "@/components/MobileNav";
+import OnTheGo from "@/components/OnTheGo";
 import { FundGraph } from "@/components/bg/Backgrounds";
 import { DisclosureMeter, FlipGlyph } from "@/components/Glyphs";
 import { loadShowcase, type Showcase } from "@/lib/showcase";
@@ -242,6 +243,9 @@ export default async function Landing() {
             <a href="#run" className="hidden rounded-full px-3 py-2 text-sm text-muted hover:text-ink sm:block">
               A real run
             </a>
+            <a href="#go" className="hidden rounded-full px-3 py-2 text-sm text-muted hover:text-ink md:block">
+              On the go
+            </a>
             <span className="mx-2 hidden h-5 w-px bg-line sm:block" />
             <span className="hidden sm:inline-flex">
               <CalaLogo label="Built on" height={18} className="text-xs text-muted" />
@@ -251,6 +255,7 @@ export default async function Landing() {
                 { href: "#problem", label: "The problem" },
                 { href: "#how", label: "How it works" },
                 { href: "#run", label: "A real run" },
+                { href: "#go", label: "On the go" },
               ]}
             />
           </nav>
@@ -615,6 +620,9 @@ export default async function Landing() {
         </div>
       </section>
 
+      {/* On the go: phone line, Telegram, spoken briefings */}
+      <OnTheGo phone={process.env.FLIPDD_PHONE_NUMBER?.trim()} telegram={process.env.FLIPDD_TELEGRAM_BOT?.trim()} />
+
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-paper/10 bg-night text-paper">
         {publicImage("art", "before-slush") ? (
@@ -631,7 +639,7 @@ export default async function Landing() {
           </div>
         )}
         <div className="relative mx-auto max-w-[85.5rem] px-5 py-24">
-          <SectionTag n="05" title="Before Slush" dark />
+          <SectionTag n="06" title="Before Slush" dark />
           <h2 className="max-w-2xl font-serif text-5xl leading-[1.05] sm:text-7xl">
             Check your meeting list before you walk in.
           </h2>
