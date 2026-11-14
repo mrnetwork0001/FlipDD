@@ -57,8 +57,12 @@ function pickVoice(list: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefin
 
 // ---------- ElevenLabs through the server ----------
 
-let player: HTMLAudioElement | null = null;
+// One player for the page, kept on window so a code reload in development
+// can't orphan audio that is still playing (Stop must always reach it).
+type W = Window & { __flipddPlayer?: HTMLAudioElement; __flipddUrls?: string[] };
+const shared = () => window as W;
 let urls: string[] = [];
+const getPlayer = () => (shared().__flipddPlayer ??= new Audio());
 let elevenState: Promise<boolean> | null = null;
 // A zero-length WAV: played inside the click, it unlocks audio on iPhone for the clips that follow.
 const SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
@@ -74,6 +78,7 @@ function clip(text: string): Promise<string> {
     if (!r.ok) throw new Error(`speak ${r.status}`);
     const url = URL.createObjectURL(await r.blob());
     urls.push(url);
+    (shared().__flipddUrls ??= []).push(url);
     return url;
   });
 }
@@ -81,6 +86,7 @@ function clip(text: string): Promise<string> {
 /** Plays `text` in the ElevenLabs voice. False if the first clip fails (the caller falls back). */
 async function playEleven(text: string, mine: number): Promise<boolean> {
   const parts = speechChunks(text, 480);
+  const player = getPlayer();
   let next: Promise<string> | null = clip(parts[0]);
   for (let i = 0; i < parts.length; i++) {
     let url: string;
@@ -90,7 +96,7 @@ async function playEleven(text: string, mine: number): Promise<boolean> {
       if (i === 0) return false;
       break;
     }
-    if (mine !== session || !player) return true;
+    if (mine !== session) return true;
     next = i + 1 < parts.length ? clip(parts[i + 1]) : null;
     next?.catch(() => undefined);
     player.src = url;
@@ -101,7 +107,7 @@ async function playEleven(text: string, mine: number): Promise<boolean> {
       break;
     }
     await new Promise<void>((done) => {
-      const p = player!;
+      const p = player;
       const end = () => {
         p.removeEventListener("ended", end);
         p.removeEventListener("error", end);
@@ -121,8 +127,16 @@ async function playEleven(text: string, mine: number): Promise<boolean> {
 
 export function stopSpeaking() {
   session++;
-  if (player) player.pause();
-  for (const u of urls) URL.revokeObjectURL(u);
+  if (typeof window !== "undefined") {
+    const p = shared().__flipddPlayer;
+    if (p) {
+      p.pause();
+      p.removeAttribute("src");
+      p.load();
+    }
+    for (const u of [...urls, ...(shared().__flipddUrls || [])]) URL.revokeObjectURL(u);
+    shared().__flipddUrls = [];
+  }
   urls = [];
   if (speechSupported()) window.speechSynthesis.cancel();
   if (playing !== null) {
@@ -140,9 +154,9 @@ export async function speak(id: string, text: string, onEnd?: () => void) {
   failed = null;
   emit();
   // Unlock audio while still inside the click (iPhone needs this for later clips).
-  player ??= new Audio();
-  player.src = SILENT;
-  player.play().catch(() => undefined);
+  const unlock = getPlayer();
+  unlock.src = SILENT;
+  unlock.play().catch(() => undefined);
   if (await elevenEnabled()) {
     const ok = await playEleven(text, mine);
     if (mine !== session) return;
