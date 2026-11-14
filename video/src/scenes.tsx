@@ -263,11 +263,8 @@ export const Problem: React.FC = () => {
   );
   return (
     <Fill bg={C.night} color={C.paper}>
-      <AbsoluteFill style={{ transform: `scale(${z})`, transformOrigin: "65% 60%" }}>
-        <Img src={staticFile("brand/before-slush.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "60% 55%" }} />
-      </AbsoluteFill>
-      {/* real people: investors across the table, then the event floor */}
-      <Stock id={42644} from={30} at={0} dur={rel("Most") - 4} shade={0.3} />
+      {/* real people only: investors across the table, then the event floor */}
+      <Stock id={42644} from={30} at={0} dur={rel("Most") - 4} shade={0.3} fadeIn={false} />
       <Stock id={13192} from={60} at={rel("Most") - 6} dur={dur - rel("Most") + 8} shade={0.3} />
       <div style={{ position: "absolute", left: 120, top: 150, width: 880, fontFamily: serif, fontSize: 82, lineHeight: 1.05 }}>
         <Spoken id="problem" range={[0, 8]} accent={{ "numbers.": C.signal }} />
@@ -329,7 +326,7 @@ export const Check: React.FC = () => {
   return (
     <Fill bg={C.paper}>
       <Sequence from={handoff - 4} layout="none">
-      <Browser name="check" url={URL} width={W} left={BX} top={48} light startFrom={S + handoff - 4}
+      <Browser name="check" url={URL} width={W} left={BX} top={48} light startFrom={markOf("check", "check.press") + 12}
         cams={[{ f: 0, z: 1 }, { f: hundred - 20 - (handoff - 4), z: 1 }, { f: hundred + 10 - (handoff - 4), rect: { x: 1150, y: 0, w: 450, h: 120 }, z: 1.0 }]} enter={-30} />
       </Sequence>
       {/* a real person typing the list, then the real app */}
@@ -441,8 +438,8 @@ export const Go: React.FC = () => {
       </div>
       {/* the phone line */}
       <Sequence from={callAt} layout="none">
-        {/* a real person on a call, walking */}
-        <Stock id={32043} from={78} at={0} dur={s.durationInFrames - callAt + 12} shade={0.3} position="60% 35%" />
+        {/* a founder in a blazer, on the call */}
+        <Stock id={310} from={45} at={0} dur={s.durationInFrames - callAt + 12} shade={0.32} position="58% 40%" />
         <div style={{ position: "absolute", left: 120, top: 330 }}><CallMark size={260} /></div>
       </Sequence>
       {/* scene-timed, so it sits outside the cut */}
