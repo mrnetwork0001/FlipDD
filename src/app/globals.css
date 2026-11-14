@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+  ::selection {
+    background: #16130e;
+    color: #f4f1e8;
+  }
+  :focus-visible {
+    outline: 2px solid #16130e;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Faint dot grid behind page sections. */
+  .dots {
+    background-image: radial-gradient(rgba(22, 19, 14, 0.13) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper transition hover:bg-signal disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/25 px-6 py-3 text-sm font-semibold text-ink transition hover:border-ink hover:bg-ink/5;
+  }
+  .field {
+    @apply w-full rounded-xl border border-line bg-white/70 px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/70 transition focus:border-ink focus:bg-white focus:outline-none;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+  }
+  /* Hero graph animation */
+  .edge-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: edge-draw 0.6s ease-out forwards;
+  }
+  .edge-scan {
+    stroke-dasharray: 4 6;
+    animation: edge-scan 0.8s linear infinite;
+  }
+  .svg-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: svg-ping 1.6s ease-out infinite;
+  }
+  .svg-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: svg-pop 0.3s ease-out both;
+  }
+  .px-flow {
+    animation-name: px-flow;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    opacity: 0.3;
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease;
+  }
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+  .skeleton {
+    @apply animate-sweep rounded bg-[length:200%_100%];
+    background-image: linear-gradient(90deg, #e9e3d5 25%, #f4efe3 50%, #e9e3d5 75%);
+  }
+}
+
+@keyframes edge-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes edge-scan {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+@keyframes svg-ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18, 1.5);
+  }
+}
+@keyframes svg-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes px-flow {
+  0% {
+    opacity: 0.3;
+  }
+  4% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* ---------- mobile (phones and tablets below the lg breakpoint) ---------- */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.burger {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4.5px;
+  border: 1px solid #dcd5c5;
+  border-radius: 10px;
+  background: #fbf9f3;
+  color: #16130e;
+}
+.burger span {
+  width: 16px;
+  height: 1.5px;
+  background: currentColor;
+  transition: transform 0.22s, opacity 0.2s;
+}
+.burger[data-open="true"] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.burger[data-open="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.burger[data-open="true"] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+@media (min-width: 1024px) {
+  .burger.lg\:hidden {
+    display: none;
+  }
+}
+@media (max-width: 1023px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+  /* 16px stops iOS Safari zooming in when a field gets focus. */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  .btn-primary {
+    min-height: 44px;
+  }
+}
+
+/* ---------- background effects (see /lab) ---------- */
+@keyframes grain-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-4%, 3%); }
+  50% { transform: translate(3%, -5%); }
+  75% { transform: translate(-3%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+.bg-grain { animation: grain-drift 9s steps(10) infinite; }
+@keyframes light-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(18%, 10%); }
+}
+.bg-grain-light { animation: light-drift 22s ease-in-out infinite; }
+@keyframes ink-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(25%, 18%) scale(1.15); } }
+@keyframes ink-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-20%, 22%) scale(0.9); } }
+@keyframes ink-c { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(15%, -20%) scale(1.1); } }
+.bg-ink-a { animation: ink-a 26s ease-in-out infinite; }
+.bg-ink-b { animation: ink-b 31s ease-in-out infinite; }
+.bg-ink-c { animation: ink-c 37s ease-in-out infinite; }
+
+/* Speaking indicator on Listen buttons */
+@keyframes voice-bar {
+  0%, 100% { height: 3px; }
+  50% { height: 11px; }
+}
+.voice-bar { height: 3px; animation: voice-bar 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .voice-bar { animation: none; height: 7px; } }
