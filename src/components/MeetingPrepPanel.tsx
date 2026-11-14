@@ -6,7 +6,7 @@
 // the bottom is the founder's own, kept in this browser per check and investor.
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Check, Copy, Loader2, X } from "lucide-react";
+import { Check, ChevronDown, Copy, Loader2, X } from "lucide-react";
 import type { CompetitorSummary, InvestorResult } from "@/lib/types";
 import type { MeetingPrep, PrepPerson, PrepRival, PrepRow, PrepSeriesPoint } from "@/lib/prep";
 import { LEVEL_LABEL } from "@/lib/types";
@@ -50,17 +50,29 @@ function saveNote(key: string, note: Note) {
   }
 }
 
-function Section({ n, title, children, aside }: { n: string; title: string; children: React.ReactNode; aside?: React.ReactNode }) {
+function Section({ n, title, children, aside, preview, fold = false }: { n: string; title: string; children: React.ReactNode; aside?: React.ReactNode; preview?: string; fold?: boolean }) {
+  const [open, setOpen] = useState(!fold);
+  const head = (
+    <span className="flex min-w-0 flex-1 items-baseline gap-2">
+      <span className="font-mono text-[11px] text-signal">{n}</span>
+      <span className="shrink-0 text-[15px] font-semibold">{title}</span>
+      {!open && preview && <span className="truncate text-[13px] text-muted">· {preview}</span>}
+    </span>
+  );
   return (
-    <section className="border-t border-line py-5">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 className="flex items-baseline gap-2 text-[15px] font-semibold">
-          <span className="font-mono text-[11px] text-signal">{n}</span>
-          {title}
-        </h3>
+    <section className="border-t border-line py-4">
+      <div className="flex items-center justify-between gap-3">
+        {fold ? (
+          <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {head}
+            <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition ${open ? "rotate-180" : ""}`} />
+          </button>
+        ) : (
+          head
+        )}
         {aside}
       </div>
-      {children}
+      {open && <div className="mt-3">{children}</div>}
     </section>
   );
 }
@@ -69,19 +81,19 @@ const Muted = ({ children }: { children: React.ReactNode }) => <p className="tex
 
 function opener(p: PrepPerson): string | undefined {
   const past = p.past.find((x) => x.role);
-  if (past) return `Ask about their time as ${past.role} at ${past.org}${past.from ? ` (${past.from}${past.to ? `–${past.to}` : ""})` : ""}: it shapes what they will probe.`;
-  if (p.founded.length && !/creandum|ventures|capital|partners/i.test(p.founded[0])) return `Ask what they learned building ${p.founded[0]}.`;
-  if (p.spoke[0]) return `They spoke at ${p.spoke[0]}: a natural opener.`;
+  if (past) return `Ask about their years as ${past.role} at ${past.org}.`;
+  if (p.founded.length && !/ventures|capital|partners|fund/i.test(p.founded[0])) return `Ask what they learned building ${p.founded[0]}.`;
+  if (p.spoke[0]) return `They spoke at ${p.spoke[0]}.`;
   return undefined;
 }
 
-function Person({ p }: { p: PrepPerson }) {
+function Person({ p, withOpener }: { p: PrepPerson; withOpener: boolean }) {
   const line = [
-    p.past.length ? `Before: ${p.past.slice(0, 2).map((x) => `${x.role ? `${x.role}, ` : ""}${x.org}${x.from ? ` (${x.from}${x.to ? `–${x.to}` : ""})` : ""}`).join("; ")}` : "",
+    p.past.length ? `Other roles: ${p.past.slice(0, 2).map((x) => `${x.role ? `${x.role}, ` : ""}${x.org}${x.from ? ` (${x.from}${x.to ? `–${x.to}` : ""})` : ""}`).join("; ")}` : "",
     p.founded.length ? `Founded: ${p.founded.slice(0, 2).join(", ")}` : "",
     p.studied.length ? `Studied: ${p.studied.slice(0, 2).join(", ")}` : "",
   ].filter(Boolean);
-  const o = opener(p);
+  const o = withOpener ? opener(p) : undefined;
   return (
     <li className="rounded-xl border border-line bg-white/60 p-3.5">
       <div className="flex items-baseline justify-between gap-2">
@@ -168,11 +180,21 @@ function Rows({ rows, cols }: { rows: PrepRow[]; cols: [string, string][] }) {
 }
 
 function Slow({ state, rows, cols, empty }: { state: "loading" | "done" | "error"; rows: PrepRow[]; cols: [string, string][]; empty: string }) {
+  const [all, setAll] = useState(false);
   if (state === "loading")
     return <p className="flex items-center gap-2 text-sm text-muted"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Asking Cala&apos;s knowledge query. This one takes 30 to 60 seconds.</p>;
   if (state === "error") return <Muted>Cala didn&apos;t answer this in time. Close and reopen the prep to try again.</Muted>;
   if (!rows.length) return <Muted>{empty}</Muted>;
-  return <Rows rows={rows} cols={cols} />;
+  return (
+    <>
+      <Rows rows={all ? rows : rows.slice(0, 5)} cols={cols} />
+      {rows.length > 5 && (
+        <button type="button" onClick={() => setAll((v) => !v)} className="mt-1.5 text-[12px] font-semibold text-muted underline-offset-2 hover:underline">
+          {all ? "Show fewer" : `Show all ${rows.length}`}
+        </button>
+      )}
+    </>
+  );
 }
 
 export default function MeetingPrepPanel({
@@ -256,9 +278,29 @@ export default function MeetingPrepPanel({
           {error && <p className="mt-5 rounded-xl bg-signal/10 px-4 py-3 text-sm text-signal">{error}</p>}
           {!prep && !error && <p className="mt-6 flex items-center gap-2 text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Reading {investor.name}&apos;s team, rounds and your competitors in Cala…</p>}
 
+          {prep && (() => {
+            const lead = prep.team.current[0];
+            const leadPast = lead?.past.find((x) => x.role);
+            const hold = Object.entries(note.hold).filter(([, v]) => v).map(([k]) => k);
+            return (
+              <div className="mt-5 rounded-2xl bg-night p-5 text-paper">
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-paper/55">In 30 seconds</p>
+                <ul className="mt-3 space-y-2.5 text-[15px] leading-snug">
+                  <li><span className="text-paper/55">Their stake · </span><span className="font-semibold">{signalLabel[prep.space.signal]}.</span> {prep.space.text.split(/(?<=\.)\s/)[0]}</li>
+                  {lead && (
+                    <li><span className="text-paper/55">Likely across the table · </span><span className="font-semibold">{lead.name}</span>{lead.role ? `, ${lead.role}` : ""}{leadPast ? `. Was ${leadPast.role} at ${leadPast.org}.` : "."}</li>
+                  )}
+                  {note.ask && <li><span className="text-paper/55">Ask · </span>{note.ask}</li>}
+                  {hold.length > 0 && <li><span className="text-paper/55">Hold back · </span>{hold.join(", ")}</li>}
+                </ul>
+              </div>
+            );
+          })()}
+
           {prep && (
             <>
-              <Section n="01" title="Their stake in your space" aside={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${signalStyle[prep.space.signal]}`}>{signalLabel[prep.space.signal]}</span>}>
+              <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">The detail, from Cala</p>
+              <Section n="01" fold title="Their stake in your space" aside={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${signalStyle[prep.space.signal]}`}>{signalLabel[prep.space.signal]}</span>}>
                 <p className="text-[15px] leading-relaxed">{prep.space.text}</p>
                 {prep.space.holdings.length > 0 && (
                   <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -271,13 +313,15 @@ export default function MeetingPrepPanel({
                 )}
               </Section>
 
-              <Section n="02" title="Who you'll meet" aside={prep.team.recorded ? <span className="text-[11px] text-muted">{prep.team.recorded} people on record</span> : undefined}>
+              <Section n="02" fold preview={prep.team.current.slice(0, 2).map((p) => `${p.name}${p.role ? `, ${p.role}` : ""}`).join(" · ") || "no partners on record"} title="Who you'll meet" aside={prep.team.recorded ? <span className="text-[11px] text-muted">{prep.team.recorded} people on record</span> : undefined}>
                 {prep.team.current.length ? (
-                  <ul className="grid gap-2.5">{prep.team.current.slice(0, 4).map((p) => <Person key={p.id} p={p} />)}</ul>
+                  <ul className="grid gap-2.5">{prep.team.current.slice(0, 3).map((p, i) => <Person key={p.id} p={p} withOpener={i < 2} />)}</ul>
                 ) : (
-                  <Muted>Cala has no team on record for {investor.name}. Ask who leads your sector before the meeting.</Muted>
+                  <Muted>Cala has no partners on record for {investor.name}{prep.team.others.length ? ` (only ${prep.team.others.map((p) => p.name).join(", ")})` : ""}. Ask who leads your sector before the meeting.</Muted>
                 )}
-                {prep.team.current.length > 4 && <p className="mt-2 text-[12px] text-muted">Also: {prep.team.current.slice(4).map((p) => `${p.name}${p.role ? ` (${p.role})` : ""}`).join(", ")}</p>}
+                {[...prep.team.current.slice(3), ...prep.team.others].length > 0 && (
+                  <p className="mt-2 text-[12px] text-muted">Also on record: {[...prep.team.current.slice(3), ...prep.team.others].map((p) => `${p.name}${p.role ? ` (${p.role})` : ""}`).join(", ")}</p>
+                )}
                 {prep.team.left.length > 0 && (
                   <p className="mt-3 rounded-lg bg-caution/10 px-3 py-2 text-[13px] text-ink/85">
                     <span className="font-semibold">Recently left · </span>
@@ -286,7 +330,7 @@ export default function MeetingPrepPanel({
                 )}
               </Section>
 
-              <Section n="03" title="What they already know about your competitors">
+              <Section n="03" fold preview={prep.rivals.filter((r) => r.arr.length || r.headcount.length || r.totalFunding).map((r) => [r.name, r.arr.length ? `ARR ${money(r.arr[r.arr.length - 1].value, r.arrUnits || "USD")}` : "", r.totalFunding ? `${money(r.totalFunding.value, r.totalFunding.units)} raised` : ""].filter(Boolean).join(" ")).join(" · ") || "little on record"} title="What they know about your competitors">
                 {prep.rivals.some((r) => r.arr.length || r.headcount.length || r.totalFunding || r.board.length) ? (
                   <div className="grid gap-2.5">{prep.rivals.map((r) => <Rival key={r.name} r={r} comp={compByName.get(r.name)} />)}</div>
                 ) : (
@@ -295,7 +339,7 @@ export default function MeetingPrepPanel({
                 {prep.rivals.some((r) => r.arr.length) && <p className="mt-2 text-[12px] text-muted">If they backed a competitor, this is the bar they will hold you to.</p>}
               </Section>
 
-              <Section n="04" title="How they invest">
+              <Section n="04" fold preview={prep.style ? `${prep.style.stages.map((x) => x.label).slice(0, 3).join(", ")} · led ${prep.style.led} of ${prep.style.roundsSeen}` : "no rounds on record"} title="How they invest">
                 {prep.style ? (
                   <div className="space-y-1.5 text-[14px]">
                     <p>
@@ -309,7 +353,7 @@ export default function MeetingPrepPanel({
                 )}
               </Section>
 
-              <Section n="05" title="What they'll find on you">
+              <Section n="05" fold preview={!prep.you ? "add your startup's name" : prep.you.status === "none" ? `no record of ${prep.you.name}` : [prep.you.stage, prep.you.totalFunding ? `${money(prep.you.totalFunding.value, prep.you.totalFunding.units)} raised` : ""].filter(Boolean).join(" · ") || "a thin record"} title="What they'll find on you">
                 {!prep.you ? (
                   <Muted>Add your startup&apos;s name to the check to see what Cala holds on you.</Muted>
                 ) : prep.you.status === "none" ? (
@@ -327,11 +371,11 @@ export default function MeetingPrepPanel({
             </>
           )}
 
-          <Section n="06" title="Their exits">
+          <Section n="06" fold preview={exits.state === "loading" ? "loading…" : exits.rows.length ? exits.rows.slice(0, 3).map((r) => r.company).join(", ") + (exits.rows.length > 3 ? "…" : "") : "none on record"} title="Their exits">
             <Slow state={exits.state} rows={exits.rows} cols={[["company", ""], ["outcome", ""], ["acquirer_or_exchange", "·"], ["year", "·"]]} empty="No acquisitions or listings of their portfolio companies on record." />
           </Section>
 
-          <Section n="07" title="Who raised in your space this year">
+          <Section n="07" fold preview={market.state === "loading" ? "loading…" : market.rows.length ? `${new Set(market.rows.map((r) => r.company)).size} companies` : "none on record"} title="Who raised in your space this year">
             <Slow state={market.state} rows={market.rows} cols={[["company", ""], ["round", ""], ["amount", "·"], ["date", "·"], ["lead_investor", "· led by"]]} empty={market.note || "No raises in your space on record for the past year."} />
           </Section>
 
@@ -365,8 +409,7 @@ export default function MeetingPrepPanel({
             </div>
             <input className="field mt-2" placeholder="Next step, e.g. send the deck by Friday" value={note.next} onChange={(e) => setNote({ ...note, next: e.target.value })} />
           </Section>
-          {prep && <p className="pt-2 text-[11px] text-muted">Every fact above comes from Cala&apos;s records, with sources where Cala has them. {prep.calls} live Cala call{prep.calls === 1 ? "" : "s"}, the rest from today&apos;s cache.</p>}
-          <a href="https://cala.ai" target="_blank" rel="noopener noreferrer" className="sr-only">Cala<ArrowUpRight /></a>
+          {prep && <p className="pt-2 text-[11px] text-muted">Every fact above comes from Cala&apos;s records, with sources where Cala has them{prep.calls ? ` (${prep.calls} live Cala call${prep.calls === 1 ? "" : "s"})` : ", cached today"}. Check anything you act on.</p>}
         </div>
       </aside>
     </div>

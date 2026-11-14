@@ -75,7 +75,8 @@ export interface PrepSpace {
 
 export interface MeetingPrep {
   investor: string;
-  team: { current: PrepPerson[]; left: PrepPerson[]; recorded: number };
+  /** current: the people a founder is likely to meet (investing roles); others: everyone else on record. */
+  team: { current: PrepPerson[]; others: PrepPerson[]; left: PrepPerson[]; recorded: number };
   style?: PrepStyle;
   space: PrepSpace;
   rivals: PrepRival[];
@@ -112,9 +113,10 @@ const stageName = (s?: string) => (s ? STAGE[s] || s.replace(/_/g, " ").toLowerC
 // Who a founder actually meets: investing roles first.
 const ROLE_RANK = (role?: string) => {
   const r = (role || "").toLowerCase();
-  if (/general partner|managing partner|founding partner|co-?founder/.test(r)) return 0;
+  if (/general partner|managing partner/.test(r)) return 0;
   if (/\bpartner\b/.test(r) && !/venture partner|visiting/.test(r)) return 1;
-  if (/principal|investment director|director/.test(r)) return 2;
+  // Founders of a fund are often no longer the ones taking first meetings.
+  if (/principal|investment director|director|co-?founder|founding partner/.test(r)) return 2;
   if (/venture partner|investor|associate|analyst/.test(r)) return 3;
   if (/residence|visiting|advisor|scout/.test(r)) return 5;
   return role ? 4 : 6;
@@ -177,8 +179,10 @@ async function team(cala: Cala, fund: RawEntity[]): Promise<MeetingPrep["team"]>
   const left = all
     .filter((p) => !current(p.until) && Date.now() - Date.parse(p.until!) < 730 * DAY)
     .sort((a, b) => (b.until || "").localeCompare(a.until || ""));
-  // Background for the people a founder is likeliest to meet.
-  const meet = now.slice(0, 4);
+  // Who a founder meets: investing roles. Residents, advisors and staff are listed, not profiled.
+  const investing = now.filter((p) => ROLE_RANK(p.role) <= 3);
+  const others = now.filter((p) => ROLE_RANK(p.role) > 3);
+  const meet = investing.slice(0, 3);
   await Promise.all(
     meet.map(async (p) => {
       const e = await cala.retrieve(p.id, PERSON_QUERY, 2).catch(() => undefined);
@@ -197,7 +201,7 @@ async function team(cala: Cala, fund: RawEntity[]): Promise<MeetingPrep["team"]>
       p.awards = edges(e, "outgoing", "RECEIVED_AWARD").map((x) => x.name).slice(0, 3);
     }),
   );
-  return { current: now.slice(0, 8), left: left.slice(0, 5), recorded: all.length };
+  return { current: investing.slice(0, 6), others: others.slice(0, 6), left: left.slice(0, 5), recorded: all.length };
 }
 
 async function style(cala: Cala, fund: RawEntity[]): Promise<PrepStyle | undefined> {
@@ -215,7 +219,7 @@ async function style(cala: Cala, fund: RawEntity[]): Promise<PrepStyle | undefin
   let lastDeal: PrepStyle["lastDeal"];
   opened.forEach((r, i) => {
     const label = stageName(str(r, "round_label")) || str(r, "name") || recent[i].e.name;
-    stages.set(label, (stages.get(label) || 0) + 1);
+    if (!/^(funding|equity) round$/i.test(label)) stages.set(label, (stages.get(label) || 0) + 1);
     const v = num(r, "transaction_value");
     const u = str(r, "transaction_value_units") || "USD";
     if (v && v > 0) (amounts[u] ||= []).push(v);
@@ -342,9 +346,10 @@ export async function meetingPrep(
   }
 }
 
+const blank = (v: string) => (/^[-–—\s]*$|^(n\/a|unknown|none|undisclosed)$/i.test(v) ? "" : v);
 const rows = (results: Record<string, unknown>[], keys: string[]): PrepRow[] =>
   results
-    .map((r) => Object.fromEntries(keys.map((k) => [k, typeof r[k] === "string" || typeof r[k] === "number" ? String(r[k]) : ""])))
+    .map((r) => Object.fromEntries(keys.map((k) => [k, typeof r[k] === "string" || typeof r[k] === "number" ? blank(String(r[k]).trim()) : ""])))
     .filter((r) => r[keys[0]])
     .slice(0, 8);
 
