@@ -12,6 +12,11 @@ import path from "path";
 import { DATA_ROOT } from "./store";
 import { interpretSpoken, synthesize, toOggOpus, transcribe, wavSeconds } from "./voice";
 import { speakable, spokenRoundup } from "./voiceScript";
+import { elevenKey, elevenOpus } from "./elevenlabs";
+import { meetingPrep, type MeetingPrep } from "./prep";
+import { cacheRead, cacheWrite } from "./store";
+import { coreKey } from "./names";
+import type { CompetitorSummary } from "./types";
 
 export { mdToTelegram, parseCheck } from "./telegramText";
 
@@ -77,6 +82,16 @@ async function tgDownload(fileId: string): Promise<Buffer> {
 async function sendSpoken(chatId: number, text: string): Promise<void> {
   try {
     await tg("sendChatAction", { chat_id: chatId, action: "record_voice" }).catch(() => undefined);
+    if (elevenKey()) {
+      try {
+        const ogg = await elevenOpus(text);
+        // 64 kbps Opus: about 8 KB a second.
+        await tgUpload("sendVoice", { chat_id: String(chatId), duration: String(Math.max(1, Math.round(ogg.length / 8000))) }, { field: "voice", name: "flipdd.ogg", type: "audio/ogg", data: ogg });
+        return;
+      } catch (err) {
+        console.warn(`[telegram] ElevenLabs voice failed, trying Gemini: ${(err as Error).message}`);
+      }
+    }
     const wav = await synthesize(text);
     if (!wav) return;
     const ogg = await toOggOpus(wav);
@@ -111,6 +126,7 @@ const HELP =
   "<b>Check a meeting list</b>\n<code>/check Creandum, Northzone, Index Ventures vs Lovable</code>\n" +
   "Add what you build after a | to also search Slush 2026 and find clean investors:\n" +
   "<code>/check Creandum, Northzone vs Lovable | AI app builder for product teams</code>\n\n" +
+  "<b>Get a meeting note for one investor</b>\n<code>/prep Creandum</code>\nWho you'll likely meet, what they know about your competitor, what to ask and what to hold back. Text and voice.\n\n" +
   "<b>Ask anything about a fund or company</b>\n<code>/ask Who sits on Lovable's board?</code>\n" +
   "or just type the question.\n\n" +
   "<b>Or send a voice note</b>\n“I'm meeting Creandum, Northzone and Index. My competitor is Lovable.”\n" +
@@ -164,6 +180,7 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
   });
   const typing = setInterval(() => tg("sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => undefined), 4500);
   const latest = new Map<string, InvestorResult>();
+  const comps = new Map<string, CompetitorSummary>();
   let slush: SlushReport | undefined;
   let failure = "";
   try {
@@ -171,6 +188,7 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
       { startupName: "", description: parsed.description, competitors: parsed.competitors, investors: parsed.investors },
       (e) => {
         if (e.type === "investor") latest.set(e.data.input, e.data);
+        if (e.type === "competitor") comps.set(e.data.input, e.data);
         if (e.type === "slush") slush = e.data;
         if (e.type === "error") failure = e.message;
       },
@@ -184,7 +202,9 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
     return;
   }
   const rows = parsed.investors.map((n) => latest.get(n)).filter((r): r is InvestorResult => Boolean(r));
-  await sendLong(chatId, formatCheck(rows, parsed.competitors, slush));
+  await cacheWrite("tgctx", String(chatId), { t: Date.now(), rows, competitors: [...comps.values()], description: parsed.description }, 7 * 86400);
+  const firstResolved = rows.find((r) => r.resolved);
+  await sendLong(chatId, formatCheck(rows, parsed.competitors, slush) + (firstResolved ? `\n\nMeeting note for one of them: <code>/prep ${esc(firstResolved.name)}</code>` : ""));
   if (voice && rows.length) await sendSpoken(chatId, spokenRoundup(rows, computeRoundRisk(rows, slush)));
 }
 
@@ -206,6 +226,72 @@ async function runAsk(chatId: number, question: string, voice = false): Promise<
   } finally {
     clearInterval(typing);
   }
+}
+
+interface ChatContext { t: number; rows: InvestorResult[]; competitors: CompetitorSummary[]; description: string }
+
+const HOLD_BACK: Record<string, string[]> = {
+  "Teaser only": ["customer names", "revenue figures", "roadmap", "data room"],
+  "Deck without customer names": ["customer names", "detailed roadmap"],
+  "Full data room": [],
+};
+const money = (v: number, units = "USD") => {
+  const sym = units === "USD" ? "$" : units === "EUR" ? "€" : units === "GBP" ? "£" : `${units} `;
+  return v >= 1e9 ? `${sym}${(v / 1e9).toFixed(2).replace(/\.?0+$/, "")}B` : v >= 1e6 ? `${sym}${Math.round(v / 1e6)}M` : `${sym}${Math.round(v / 1e3)}K`;
+};
+const mon = (d: string) => new Date(d).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+const SIGNAL = { several: "Not a blocker", one: "Expect the comparison", none: "First bet in your space" } as const;
+
+function prepSummary(r: InvestorResult, p: MeetingPrep): { html: string; spoken: string } {
+  const lead = p.team.current[0];
+  const past = lead?.past.find((x) => x.role);
+  const hold = HOLD_BACK[r.share.level] || [];
+  const stake = `${SIGNAL[p.space.signal]}. ${p.space.text.split(/(?<=\.)\s/)[0]}`;
+  const lines = [`<b>Meeting prep · ${esc(p.investor)}</b>`, `<b>In 30 seconds</b>`, `• Their stake: ${esc(stake)}`];
+  if (lead) lines.push(`• Likely across the table: <b>${esc(lead.name)}</b>${lead.role ? `, ${esc(lead.role)}` : ""}${past ? `. Was ${esc(past.role || "")} at ${esc(past.org)}.` : ""}`);
+  if (r.ask.question) lines.push(`• Ask: “${esc(r.ask.question)}”`);
+  if (hold.length) lines.push(`• Hold back: ${esc(hold.join(", "))}`);
+  const out = [lines.join("\n")];
+  for (const rv of p.rivals.filter((x) => x.arr.length || x.headcount.length || x.totalFunding)) {
+    const bits = [rv.stage, rv.totalFunding ? `${money(rv.totalFunding.value, rv.totalFunding.units)} raised` : ""].filter(Boolean);
+    if (rv.arr.length) bits.push(`ARR ${rv.arr.map((x) => `${money(x.value, rv.arrUnits || "USD")} (${mon(x.date)})`).join(" → ")}`);
+    if (rv.headcount.length) bits.push(`people ${rv.headcount.map((x) => Math.round(x.value)).join(" → ")}`);
+    out.push(`<b>What they know about ${esc(rv.name)}</b>\n${esc(bits.join(" · "))}`);
+  }
+  if (p.style) out.push(`<b>How they invest</b>\n${esc(p.style.stages.map((s) => `${s.label} ×${s.count}`).join(", "))}. Led ${p.style.led} of their last ${p.style.roundsSeen}.${p.style.medianRound ? ` Typical round ${money(p.style.medianRound.value, p.style.medianRound.units)}.` : ""}`);
+  const others = p.team.current.slice(1, 3).map((x) => `${x.name}${x.role ? ` (${x.role})` : ""}`);
+  if (others.length) out.push(`<b>Also on the team</b>\n${esc(others.join(", "))}`);
+  const url = process.env.FLIPDD_PUBLIC_URL?.trim();
+  if (url) out.push(`Full note, with sources and your own notes: ${esc(url.replace(/\/$/, ""))}/app`);
+  const spoken = [
+    `${p.investor}. ${stake}`,
+    lead ? `Likely across the table: ${lead.name}${lead.role ? `, ${lead.role}` : ""}${past ? `, who was ${past.role} at ${past.org}` : ""}.` : "",
+    r.ask.question ? `Ask them: ${r.ask.question}` : "",
+    hold.length ? `Hold back ${hold.join(", ")}.` : "",
+  ].filter(Boolean).join(" ");
+  return { html: out.join("\n\n"), spoken };
+}
+
+/** /prep <investor>: the meeting note for one investor from the chat's last check. */
+async function runPrep(chatId: number, name: string): Promise<void> {
+  const ctx = await cacheRead<ChatContext>("tgctx", String(chatId));
+  if (!ctx?.rows?.length) {
+    await sendLong(chatId, "Run a check first, then ask for a note:\n<code>/check Creandum, Northzone vs Lovable</code>\n<code>/prep Creandum</code>");
+    return;
+  }
+  const key = coreKey(name);
+  const r = ctx.rows.find((x) => coreKey(x.name) === key || coreKey(x.input) === key) || ctx.rows.find((x) => coreKey(x.name).includes(key) || key.includes(coreKey(x.name)));
+  if (!r || !r.resolved) {
+    await sendLong(chatId, `No ${esc(name)} in your last check. Your list: ${esc(ctx.rows.map((x) => x.name).join(", "))}.`);
+    return;
+  }
+  const apiKey = process.env.CALA_API_KEY;
+  if (!apiKey) throw new Error("CALA_API_KEY is not set");
+  await tg("sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => undefined);
+  const prep = await meetingPrep({ investor: r, competitors: ctx.competitors || [], startupName: "" }, apiKey);
+  const { html, spoken } = prepSummary(r, prep);
+  await sendLong(chatId, html);
+  await sendSpoken(chatId, spoken);
 }
 
 /** A voice note: transcribe it, say what was heard, then check or ask, and answer in text and voice. */
@@ -269,6 +355,10 @@ export async function handleUpdate(update: TelegramUpdate): Promise<void> {
   try {
     if (/^\/(start|help)(@\w+)?$/i.test(cmd)) await sendLong(chatId, HELP);
     else if (/^\/check(@\w+)?$/i.test(cmd)) await runCheck(chatId, arg);
+    else if (/^\/prep(@\w+)?$/i.test(cmd)) {
+      if (!arg) await sendLong(chatId, "Which investor? e.g. <code>/prep Creandum</code>");
+      else await runPrep(chatId, arg);
+    }
     else if (/^\/ask(@\w+)?$/i.test(cmd)) {
       if (arg.length < 5) await sendLong(chatId, "Ask a question, e.g. <code>/ask Who led Lovable's Series B?</code>");
       else await runAsk(chatId, arg);

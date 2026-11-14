@@ -45,3 +45,27 @@ export async function elevenSpeech(text: string): Promise<Buffer> {
   await cacheWrite("tts", id, { t: Date.now(), mp3: mp3.toString("base64") }, 30 * 86400);
   return mp3;
 }
+
+/** The same voice as an Ogg Opus voice note: Telegram's own format, so no conversion is needed. */
+export async function elevenOpus(text: string): Promise<Buffer> {
+  const key = elevenKey();
+  if (!key) throw new Error("ELEVENLABS_API_KEY is not set");
+  const spoken = forVoice(text).slice(0, 4500);
+  const id = createHash("sha1").update(JSON.stringify(["opus", voiceId(), model(), spoken])).digest("hex");
+  const hit = await cacheRead<{ t: number; ogg: string }>("tts", id);
+  if (hit?.ogg) return Buffer.from(hit.ogg, "base64");
+  const res = await fetch(`${API}/text-to-speech/${voiceId()}?output_format=opus_48000_64`, {
+    method: "POST",
+    headers: { "xi-api-key": key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      text: spoken,
+      model_id: model(),
+      voice_settings: { stability: 0.4, similarity_boost: 0.8, style: 0.4, use_speaker_boost: true, speed: Number(process.env.ELEVENLABS_SPEED || 1.15) },
+    }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const ogg = Buffer.from(await res.arrayBuffer());
+  await cacheWrite("tts", id, { t: Date.now(), ogg: ogg.toString("base64") }, 30 * 86400);
+  return ogg;
+}
