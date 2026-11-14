@@ -24,16 +24,16 @@ const Fill: React.FC<{ bg: string; color?: string; children: React.ReactNode }> 
  * Real people (stock B-roll, see data/stock.json) as a full-bleed cutaway: a slow
  * push-in, a light warm grade to sit with the film, and a fade at both ends.
  */
-const Stock: React.FC<{ id: number; from?: number; dur: number; at?: number; shade?: number; position?: string }> = ({ id, from = 0, dur, at = 0, shade = 0.25, position = "50% 50%" }) => {
+const Stock: React.FC<{ id: number; from?: number; dur: number; at?: number; shade?: number; position?: string; rate?: number; fadeIn?: boolean }> = ({ id, from = 0, dur, at = 0, shade = 0.25, position = "50% 50%", rate = 1, fadeIn = true }) => {
   const f = useCurrentFrame() - at;
   if (f < -1 || f > dur + 1) return null;
-  const o = interpolate(f, [0, 8, dur - 8, dur], [0, 1, 1, 0], clamp);
+  const o = interpolate(f, [0, fadeIn ? 8 : 0.01, dur - 8, dur], [fadeIn ? 0 : 1, 1, 1, 0], clamp);
   const z = interpolate(f, [0, dur], [1.04, 1.12], clamp);
   return (
     <AbsoluteFill style={{ opacity: o }}>
       <Sequence from={at} layout="none">
         <AbsoluteFill style={{ transform: `scale(${z})` }}>
-          <OffthreadVideo src={staticFile(`footage/stock/${id}.mp4`)} startFrom={from} muted style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: position, filter: "sepia(0.18) saturate(0.85) contrast(1.06) brightness(0.96)" }} />
+          <OffthreadVideo src={staticFile(`footage/stock/${id}.mp4`)} startFrom={from} playbackRate={rate} muted style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: position, filter: "sepia(0.18) saturate(0.85) contrast(1.06) brightness(0.96)" }} />
         </AbsoluteFill>
       </Sequence>
       <AbsoluteFill style={{ background: `linear-gradient(90deg, rgba(21,18,14,${0.55 + shade}) 0%, rgba(21,18,14,${shade}) 55%, rgba(21,18,14,0.05) 100%)` }} />
@@ -208,40 +208,43 @@ const BX = (1920 - W) / 2;
 // ---------------------------------------------------------------- 1. open: the hook
 
 export const Open: React.FC = () => {
-  const { f, rel } = useCue("open");
-  const snap = rel("already");
-  const stamp = rel("competitor.");
-  const sp = pop(f, stamp);
-  const shake = f >= stamp && f < stamp + 10 ? Math.sin((f - stamp) * 2.6) * (10 - (f - stamp)) * 0.9 : 0;
+  const { f, dur, rel } = useCue("open");
+  const cardAt = rel("already") - 4;
+  const pillAt = rel("competitor.") - 2;
+  const p = pop(f, cardAt);
+  const pill = pop(f, pillAt);
+  const bar = interpolate(f, [pillAt - 2, pillAt + 10], [0, 1], { ...clamp, easing: expo });
+  const top = run.investors[0];
   return (
     <Fill bg={C.night} color={C.paper}>
-      <AbsoluteFill style={{ background: "radial-gradient(1200px 700px at 70% 70%, rgba(214,60,34,0.16), transparent 70%)" }} />
-      <div style={{ position: "absolute", left: 120, top: 112, right: 120, fontFamily: serif, fontSize: 96, lineHeight: 1.02, letterSpacing: "-0.01em" }}>
+      {/* a real meeting: the handshake lands on "That's normal." */}
+      <Stock id={30010} from={120} at={0} dur={dur + 12} rate={0.6} shade={0.4} position="50% 35%" fadeIn={false} />
+      <div style={{ position: "absolute", left: 120, top: 110, width: 1300, fontFamily: serif, fontSize: 104, lineHeight: 1.02, letterSpacing: "-0.01em", textShadow: "0 2px 30px rgba(0,0,0,0.35)" }}>
         <Spoken id="open" range={[0, 7]} accent={{ "competitor.": C.signal }} />
-        <Spoken id="open" range={[7, 13]} accent={{ "blind": C.signal }} style={{ fontSize: 58, marginTop: 22, color: "rgba(244,241,232,0.78)" }} />
+        <Spoken id="open" range={[7, 13]} accent={{ "blind": C.signal }} style={{ fontSize: 56, marginTop: 24, color: "rgba(244,241,232,0.85)" }} />
       </div>
-      <div style={{ position: "absolute", inset: 0, transform: `translateX(${shake}px)` }}>
-        {/* the meeting, there from frame 0 */}
-        <div style={{ position: "absolute", left: 150, top: 560, width: 560, padding: "34px 40px", borderRadius: 30, background: C.card, color: C.ink, boxShadow: "0 40px 90px rgba(0,0,0,0.5)" }}>
-          <Kicker>Next meeting</Kicker>
-          <div style={{ fontFamily: serif, fontSize: 92, lineHeight: 1, marginTop: 14 }}>Creandum</div>
-          <div style={{ marginTop: 14, fontSize: 24, color: C.muted }}>On your Slush meeting list</div>
-        </div>
-        {/* the competitor */}
-        <In at={snap - 6} y={0} x={30} style={{ position: "absolute", left: 1330, top: 610, width: 440 }}>
-          <div style={{ padding: "28px 34px", borderRadius: 26, background: "rgba(244,241,232,0.06)", border: `2px solid ${C.signal}` }}>
-            <Kicker color="rgba(244,241,232,0.6)">Your competitor</Kicker>
-            <div style={{ fontFamily: serif, fontSize: 76, marginTop: 8 }}>Lovable</div>
+      {/* the real FlipDD verdict card, as the app shows it */}
+      <div style={{
+        position: "absolute", left: 1010, top: 790, width: 800, display: "flex", borderRadius: 22, overflow: "hidden", background: C.card, color: C.ink,
+        boxShadow: "0 40px 90px rgba(0,0,0,0.45)", opacity: interpolate(f, [cardAt, cardAt + 6], [0, 1], clamp), transform: `translateY(${(1 - p) * 40}px)`,
+      }}>
+        <div style={{ width: 8, background: C.signal, transform: `scaleY(${0.25 + 0.75 * bar})`, transformOrigin: "50% 100%" }} />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 28, padding: "26px 32px" }}>
+          <span style={{ fontFamily: mono, fontSize: 20, color: C.muted }}>1</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span style={{ fontSize: 40, fontWeight: 700 }}>{top.name}</span>
+              <span style={{
+                display: "inline-flex", padding: "6px 16px", borderRadius: 999, background: "rgba(214,60,34,0.1)", color: C.signal, fontSize: 22, fontWeight: 600,
+                boxShadow: "inset 0 0 0 1.5px rgba(214,60,34,0.3)", opacity: interpolate(f, [pillAt, pillAt + 4], [0, 1], clamp), transform: `scale(${0.7 + 0.3 * pill})`,
+              }}>Backs your competitor</span>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 27, color: "rgba(22,19,14,0.8)" }}>{run.creandum.headline}</div>
           </div>
-        </In>
-        <LeakLine x1={710} y1={700} x2={1330} y2={700} a={snap} b={snap + 16} width={6} />
-        {/* the verdict, from the run */}
-        <div style={{
-          position: "absolute", left: 470, top: 812, opacity: f >= stamp ? 1 : 0, transform: `rotate(-6deg) scale(${1.5 - 0.5 * sp})`,
-          border: `5px solid ${C.signal}`, color: C.signal, background: "rgba(21,18,14,0.92)", padding: "12px 26px", borderRadius: 12,
-          fontFamily: mono, fontSize: 34, letterSpacing: "0.08em", fontWeight: 500,
-        }}>
-          {run.creandum.headline.toUpperCase()}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.12em", color: C.muted }}>SHARE</div>
+            <div style={{ marginTop: 4, fontSize: 26, fontWeight: 700 }}>{top.share}</div>
+          </div>
         </div>
       </div>
     </Fill>
@@ -418,7 +421,8 @@ export const Prep: React.FC = () => {
 export const Go: React.FC = () => {
   const { f, s, rel } = useCue("go");
   const L = (i: number) => s.lines[i].startFrame - s.from;
-  const callAt = rel("call.") - 16;
+  // the call shot starts before "Or just call." so she lifts the phone to her ear on screen
+  const callAt = rel("Or") - 45;
   return (
     <Fill bg={C.paper}>
       <Stock id={4915} from={90} at={0} dur={rel("Telegram") + 4} shade={0.35} />
@@ -438,8 +442,8 @@ export const Go: React.FC = () => {
       {/* the phone line */}
       <Sequence from={callAt} layout="none">
         {/* a real person on a call, walking */}
-        <Stock id={32043} from={60} at={0} dur={s.durationInFrames - callAt + 12} shade={0.35} position="60% 40%" />
-        <div style={{ position: "absolute", left: 120, top: 300 }}><CallMark size={300} /></div>
+        <Stock id={32043} from={78} at={0} dur={s.durationInFrames - callAt + 12} shade={0.3} position="60% 35%" />
+        <div style={{ position: "absolute", left: 120, top: 330 }}><CallMark size={260} /></div>
       </Sequence>
       {/* scene-timed, so it sits outside the cut */}
       {f >= callAt && (

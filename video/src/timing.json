@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "totalFrames": 2626,
+ "totalFrames": 2647,
  "bpm": 110,
  "beats": [
   11,
@@ -162,7 +162,9 @@
   2563,
   2580,
   2596,
-  2612
+  2612,
+  2629,
+  2645
  ],
  "music": {
   "file": "audio/music.mp3",
@@ -420,7 +422,7 @@
   {
    "id": "check",
    "from": 683,
-   "durationInFrames": 300,
+   "durationInFrames": 270,
    "lines": [
     {
      "voice": "narrator",
@@ -525,95 +527,95 @@
   },
   {
    "id": "ties",
-   "from": 983,
+   "from": 953,
    "durationInFrames": 353,
    "lines": [
     {
      "voice": "narrator",
      "text": "Every tie, sourced. Creandum backed Lovable. Northzone co-invests with Accel, Lovable's lead. Others hold a lookalike.",
      "file": "audio/vo/ties_0.mp3",
-     "startFrame": 987,
+     "startFrame": 957,
      "durationFrames": 338,
      "words": [
       {
        "word": "Every",
-       "start": 987,
-       "end": 998
+       "start": 957,
+       "end": 968
       },
       {
        "word": "tie,",
-       "start": 1000,
-       "end": 1013
+       "start": 970,
+       "end": 983
       },
       {
        "word": "sourced.",
-       "start": 1019,
-       "end": 1040
+       "start": 989,
+       "end": 1010
       },
       {
        "word": "Creandum",
-       "start": 1054,
-       "end": 1072
+       "start": 1024,
+       "end": 1042
       },
       {
        "word": "backed",
-       "start": 1078,
-       "end": 1090
+       "start": 1048,
+       "end": 1060
       },
       {
        "word": "Lovable.",
-       "start": 1095,
-       "end": 1114
+       "start": 1065,
+       "end": 1084
       },
       {
        "word": "Northzone",
-       "start": 1124,
-       "end": 1142
+       "start": 1094,
+       "end": 1112
       },
       {
        "word": "co-invests",
-       "start": 1143,
-       "end": 1171
+       "start": 1113,
+       "end": 1141
       },
       {
        "word": "with",
-       "start": 1172,
-       "end": 1178
+       "start": 1142,
+       "end": 1148
       },
       {
        "word": "Accel,",
-       "start": 1181,
-       "end": 1198
+       "start": 1151,
+       "end": 1168
       },
       {
        "word": "Lovable's",
-       "start": 1210,
-       "end": 1229
+       "start": 1180,
+       "end": 1199
       },
       {
        "word": "lead.",
-       "start": 1236,
-       "end": 1248
+       "start": 1206,
+       "end": 1218
       },
       {
        "word": "Others",
-       "start": 1262,
-       "end": 1275
+       "start": 1232,
+       "end": 1245
       },
       {
        "word": "hold",
-       "start": 1282,
-       "end": 1291
+       "start": 1252,
+       "end": 1261
       },
       {
        "word": "a",
-       "start": 1292,
-       "end": 1294
+       "start": 1262,
+       "end": 1264
       },
       {
        "word": "lookalike.",
-       "start": 1296,
-       "end": 1324
+       "start": 1266,
+       "end": 1294
       }
      ]
     }
@@ -621,180 +623,180 @@
   },
   {
    "id": "prep",
-   "from": 1336,
+   "from": 1306,
    "durationInFrames": 483,
    "lines": [
     {
      "voice": "narrator",
      "text": "Then tap Prep. Who's likely across the table, and what they did before. What they already know about Lovable: seventeen million in revenue to seventy-five. What to ask, and what to hold back.",
      "file": "audio/vo/prep_0.mp3",
-     "startFrame": 1340,
+     "startFrame": 1310,
      "durationFrames": 467,
      "words": [
       {
        "word": "Then",
-       "start": 1340,
-       "end": 1348
+       "start": 1310,
+       "end": 1318
       },
       {
        "word": "tap",
-       "start": 1353,
-       "end": 1364
+       "start": 1323,
+       "end": 1334
       },
       {
        "word": "Prep.",
-       "start": 1370,
-       "end": 1385
+       "start": 1340,
+       "end": 1355
       },
       {
        "word": "Who's",
-       "start": 1404,
-       "end": 1411
+       "start": 1374,
+       "end": 1381
       },
       {
        "word": "likely",
-       "start": 1413,
-       "end": 1421
+       "start": 1383,
+       "end": 1391
       },
       {
        "word": "across",
-       "start": 1423,
-       "end": 1433
+       "start": 1393,
+       "end": 1403
       },
       {
        "word": "the",
-       "start": 1434,
-       "end": 1436
+       "start": 1404,
+       "end": 1406
       },
       {
        "word": "table,",
-       "start": 1439,
-       "end": 1456
+       "start": 1409,
+       "end": 1426
       },
       {
        "word": "and",
-       "start": 1458,
-       "end": 1462
+       "start": 1428,
+       "end": 1432
       },
       {
        "word": "what",
-       "start": 1464,
-       "end": 1469
+       "start": 1434,
+       "end": 1439
       },
       {
        "word": "they",
-       "start": 1470,
-       "end": 1474
+       "start": 1440,
+       "end": 1444
       },
       {
        "word": "did",
-       "start": 1477,
-       "end": 1484
+       "start": 1447,
+       "end": 1454
       },
       {
        "word": "before.",
-       "start": 1486,
-       "end": 1508
+       "start": 1456,
+       "end": 1478
       },
       {
        "word": "What",
-       "start": 1522,
-       "end": 1527
+       "start": 1492,
+       "end": 1497
       },
       {
        "word": "they",
-       "start": 1528,
-       "end": 1532
+       "start": 1498,
+       "end": 1502
       },
       {
        "word": "already",
-       "start": 1533,
-       "end": 1543
+       "start": 1503,
+       "end": 1513
       },
       {
        "word": "know",
-       "start": 1544,
-       "end": 1551
+       "start": 1514,
+       "end": 1521
       },
       {
        "word": "about",
-       "start": 1554,
-       "end": 1563
+       "start": 1524,
+       "end": 1533
       },
       {
        "word": "Lovable:",
-       "start": 1568,
-       "end": 1587
+       "start": 1538,
+       "end": 1557
       },
       {
        "word": "seventeen",
-       "start": 1601,
-       "end": 1615
+       "start": 1571,
+       "end": 1585
       },
       {
        "word": "million",
-       "start": 1618,
-       "end": 1630
+       "start": 1588,
+       "end": 1600
       },
       {
        "word": "in",
-       "start": 1634,
-       "end": 1638
+       "start": 1604,
+       "end": 1608
       },
       {
        "word": "revenue",
-       "start": 1641,
-       "end": 1656
+       "start": 1611,
+       "end": 1626
       },
       {
        "word": "to",
-       "start": 1661,
-       "end": 1665
+       "start": 1631,
+       "end": 1635
       },
       {
        "word": "seventy-five.",
-       "start": 1668,
-       "end": 1697
+       "start": 1638,
+       "end": 1667
       },
       {
        "word": "What",
-       "start": 1713,
-       "end": 1721
+       "start": 1683,
+       "end": 1691
       },
       {
        "word": "to",
-       "start": 1722,
-       "end": 1725
+       "start": 1692,
+       "end": 1695
       },
       {
        "word": "ask,",
-       "start": 1728,
-       "end": 1747
+       "start": 1698,
+       "end": 1717
       },
       {
        "word": "and",
-       "start": 1756,
-       "end": 1760
+       "start": 1726,
+       "end": 1730
       },
       {
        "word": "what",
-       "start": 1762,
-       "end": 1769
+       "start": 1732,
+       "end": 1739
       },
       {
        "word": "to",
-       "start": 1771,
-       "end": 1774
+       "start": 1741,
+       "end": 1744
       },
       {
        "word": "hold",
-       "start": 1777,
-       "end": 1784
+       "start": 1747,
+       "end": 1754
       },
       {
        "word": "back.",
-       "start": 1787,
-       "end": 1807
+       "start": 1757,
+       "end": 1777
       }
      ]
     }
@@ -802,110 +804,110 @@
   },
   {
    "id": "go",
-   "from": 1819,
-   "durationInFrames": 477,
+   "from": 1789,
+   "durationInFrames": 528,
    "lines": [
     {
      "voice": "narrator",
      "text": "Between meetings, it's on your phone. Ask the Telegram bot, and the note comes back as a voice note.",
      "file": "audio/vo/go_0.mp3",
-     "startFrame": 1823,
+     "startFrame": 1793,
      "durationFrames": 229,
      "words": [
       {
        "word": "Between",
-       "start": 1823,
-       "end": 1835
+       "start": 1793,
+       "end": 1805
       },
       {
        "word": "meetings,",
-       "start": 1837,
-       "end": 1855
+       "start": 1807,
+       "end": 1825
       },
       {
        "word": "it's",
-       "start": 1856,
-       "end": 1862
+       "start": 1826,
+       "end": 1832
       },
       {
        "word": "on",
-       "start": 1864,
-       "end": 1868
+       "start": 1834,
+       "end": 1838
       },
       {
        "word": "your",
-       "start": 1869,
-       "end": 1873
+       "start": 1839,
+       "end": 1843
       },
       {
        "word": "phone.",
-       "start": 1875,
-       "end": 1888
+       "start": 1845,
+       "end": 1858
       },
       {
        "word": "Ask",
-       "start": 1905,
-       "end": 1913
+       "start": 1875,
+       "end": 1883
       },
       {
        "word": "the",
-       "start": 1913,
-       "end": 1916
+       "start": 1883,
+       "end": 1886
       },
       {
        "word": "Telegram",
-       "start": 1918,
-       "end": 1933
+       "start": 1888,
+       "end": 1903
       },
       {
        "word": "bot,",
-       "start": 1935,
-       "end": 1948
+       "start": 1905,
+       "end": 1918
       },
       {
        "word": "and",
-       "start": 1962,
-       "end": 1966
+       "start": 1932,
+       "end": 1936
       },
       {
        "word": "the",
-       "start": 1967,
-       "end": 1969
+       "start": 1937,
+       "end": 1939
       },
       {
        "word": "note",
-       "start": 1971,
-       "end": 1979
+       "start": 1941,
+       "end": 1949
       },
       {
        "word": "comes",
-       "start": 1983,
-       "end": 1993
+       "start": 1953,
+       "end": 1963
       },
       {
        "word": "back",
-       "start": 1995,
-       "end": 2003
+       "start": 1965,
+       "end": 1973
       },
       {
        "word": "as",
-       "start": 2008,
-       "end": 2014
+       "start": 1978,
+       "end": 1984
       },
       {
        "word": "a",
-       "start": 2016,
-       "end": 2017
+       "start": 1986,
+       "end": 1987
       },
       {
        "word": "voice",
-       "start": 2021,
-       "end": 2031
+       "start": 1991,
+       "end": 2001
       },
       {
        "word": "note.",
-       "start": 2032,
-       "end": 2051
+       "start": 2002,
+       "end": 2021
       }
      ]
     },
@@ -913,63 +915,63 @@
      "voice": "flipdd",
      "text": "Creandum. Expect the comparison. Likely across the table: Sabina Wizander, Partner.",
      "file": "audio/vo/go_1.mp3",
-     "startFrame": 2065,
-     "durationFrames": 169,
+     "startFrame": 2035,
+     "durationFrames": 177,
      "words": [
       {
        "word": "Creandum.",
-       "start": 2065,
-       "end": 2088
+       "start": 2035,
+       "end": 2054
       },
       {
        "word": "Expect",
-       "start": 2092,
-       "end": 2104
+       "start": 2059,
+       "end": 2069
       },
       {
        "word": "the",
-       "start": 2105,
-       "end": 2107
+       "start": 2071,
+       "end": 2073
       },
       {
        "word": "comparison.",
-       "start": 2108,
-       "end": 2128
+       "start": 2074,
+       "end": 2094
       },
       {
        "word": "Likely",
-       "start": 2132,
-       "end": 2142
+       "start": 2107,
+       "end": 2117
       },
       {
        "word": "across",
-       "start": 2144,
-       "end": 2153
+       "start": 2119,
+       "end": 2128
       },
       {
        "word": "the",
-       "start": 2154,
-       "end": 2156
+       "start": 2129,
+       "end": 2131
       },
       {
        "word": "table:",
-       "start": 2157,
-       "end": 2171
+       "start": 2133,
+       "end": 2145
       },
       {
        "word": "Sabina",
-       "start": 2176,
-       "end": 2189
+       "start": 2159,
+       "end": 2170
       },
       {
        "word": "Wizander,",
-       "start": 2190,
-       "end": 2206
+       "start": 2172,
+       "end": 2188
       },
       {
        "word": "Partner.",
-       "start": 2210,
-       "end": 2234
+       "start": 2191,
+       "end": 2212
       }
      ]
     },
@@ -977,23 +979,23 @@
      "voice": "narrator",
      "text": "Or just call.",
      "file": "audio/vo/go_2.mp3",
-     "startFrame": 2248,
+     "startFrame": 2226,
      "durationFrames": 37,
      "words": [
       {
        "word": "Or",
-       "start": 2248,
-       "end": 2254
+       "start": 2226,
+       "end": 2232
       },
       {
        "word": "just",
-       "start": 2255,
-       "end": 2261
+       "start": 2233,
+       "end": 2239
       },
       {
        "word": "call.",
-       "start": 2263,
-       "end": 2284
+       "start": 2241,
+       "end": 2262
       }
      ]
     }
@@ -1001,55 +1003,55 @@
   },
   {
    "id": "real",
-   "from": 2296,
+   "from": 2317,
    "durationInFrames": 150,
    "lines": [
     {
      "voice": "narrator",
      "text": "Every fact comes from Cala, with its source.",
      "file": "audio/vo/real_0.mp3",
-     "startFrame": 2300,
+     "startFrame": 2321,
      "durationFrames": 98,
      "words": [
       {
        "word": "Every",
-       "start": 2300,
-       "end": 2310
+       "start": 2321,
+       "end": 2331
       },
       {
        "word": "fact",
-       "start": 2312,
-       "end": 2322
+       "start": 2333,
+       "end": 2343
       },
       {
        "word": "comes",
-       "start": 2324,
-       "end": 2333
+       "start": 2345,
+       "end": 2354
       },
       {
        "word": "from",
-       "start": 2334,
-       "end": 2340
+       "start": 2355,
+       "end": 2361
       },
       {
        "word": "Cala,",
-       "start": 2342,
-       "end": 2358
+       "start": 2363,
+       "end": 2379
       },
       {
        "word": "with",
-       "start": 2360,
-       "end": 2367
+       "start": 2381,
+       "end": 2388
       },
       {
        "word": "its",
-       "start": 2368,
-       "end": 2373
+       "start": 2389,
+       "end": 2394
       },
       {
        "word": "source.",
-       "start": 2374,
-       "end": 2398
+       "start": 2395,
+       "end": 2419
       }
      ]
     }
@@ -1057,50 +1059,50 @@
   },
   {
    "id": "close",
-   "from": 2446,
+   "from": 2467,
    "durationInFrames": 180,
    "lines": [
     {
      "voice": "narrator",
      "text": "FlipDD. Know who is across the table.",
      "file": "audio/vo/close_0.mp3",
-     "startFrame": 2450,
+     "startFrame": 2471,
      "durationFrames": 99,
      "words": [
       {
        "word": "FlipDD.",
-       "start": 2450,
-       "end": 2486
+       "start": 2471,
+       "end": 2507
       },
       {
        "word": "Know",
-       "start": 2491,
-       "end": 2498
+       "start": 2512,
+       "end": 2519
       },
       {
        "word": "who",
-       "start": 2500,
-       "end": 2505
-      },
-      {
-       "word": "is",
-       "start": 2507,
-       "end": 2510
-      },
-      {
-       "word": "across",
-       "start": 2511,
-       "end": 2523
-      },
-      {
-       "word": "the",
-       "start": 2524,
+       "start": 2521,
        "end": 2526
       },
       {
-       "word": "table.",
+       "word": "is",
        "start": 2528,
-       "end": 2549
+       "end": 2531
+      },
+      {
+       "word": "across",
+       "start": 2532,
+       "end": 2544
+      },
+      {
+       "word": "the",
+       "start": 2545,
+       "end": 2547
+      },
+      {
+       "word": "table.",
+       "start": 2549,
+       "end": 2570
       }
      ]
     }

@@ -45,8 +45,9 @@ function effects(): Fx[] {
   const fx: Fx[] = [
     // the hook: the line snaps tight on "already", the verdict stamps on "competitor"
     { file: "alert", at: 2, vol: 0.25 },
-    { file: "snap", at: w("open", "already") - 2, vol: 0.6 },
-    { file: "thud", at: w("open", "competitor.") - 1, vol: 0.75 },
+    { file: "whoosh", at: w("open", "already") - 6, vol: 0.35 },
+    { file: "pop", at: w("open", "competitor.") - 2, vol: 0.6 },
+    { file: "thud", at: w("open", "That's") - 2, vol: 0.25 },
     { file: "whoosh", at: sc("problem") - 8, vol: 0.3 },
     ...["market", "rival's", "numbers."].map((x) => ({ file: "pop", at: w("problem", x) - 2, vol: 0.32 })),
     { file: "alert", at: w("problem", "name.") - 4, vol: 0.3 },
@@ -69,7 +70,7 @@ function effects(): Fx[] {
     { file: "whoosh", at: sc("go") - 8, vol: 0.3 },
     { file: "pop", at: w("go", "Telegram") - 4, vol: 0.4 },
     { file: "chime", at: lineStart("go", 1) - 6, vol: 0.35 },
-    { file: "ring", at: w("go", "call.") - 18, vol: 0.45, dur: 60 },
+    { file: "ring", at: w("go", "Or") - 40, vol: 0.4, dur: 70 },
     { file: "whoosh", at: sc("real") - 8, vol: 0.3 },
     { file: "pop", at: w("real", "its") - 2, vol: 0.35 },
     { file: "flip", at: sc("close") + 1, vol: 0.5 },
