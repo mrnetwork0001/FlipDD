@@ -269,7 +269,7 @@ export default async function Landing() {
         <FundGraph />
         {/* Soft fade behind the text so the graph never competes with it */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(42%_62%_at_22%_52%,rgba(244,241,232,0.92),rgba(244,241,232,0.55)_55%,transparent_80%)]" />
-        <div className="relative mx-auto grid max-w-[85.5rem] items-center gap-12 px-5 pb-16 pt-10 lg:grid-cols-[1fr_1.05fr] lg:pb-20 lg:pt-12">
+        <div className="relative mx-auto grid max-w-[85.5rem] grid-cols-1 items-center gap-12 px-5 pb-16 pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:pb-20 lg:pt-12">
           <div>
             <p className="mb-5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
               <span className="text-signal">[ FlipDD ]</span> / Reverse due diligence for founders
@@ -321,7 +321,7 @@ export default async function Landing() {
       <section id="problem" className="mx-auto max-w-[85.5rem] scroll-mt-20 px-5 py-24">
         <SectionTag n="01" title="The problem" />
         <Reveal>
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end">
             <h2 className="font-serif text-5xl leading-[1.05] sm:text-6xl">Investors check you. Check them back.</h2>
             <p className="text-lg leading-relaxed text-muted">
               An investor tied to your competitor is a bad meeting twice over: they are unlikely to invest,
@@ -383,7 +383,7 @@ export default async function Landing() {
               A plan for every meeting, not a database to browse.
             </h2>
           </Reveal>
-          <div className="mt-14 grid gap-5 lg:grid-cols-3">
+          <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
             {/* Ranked list */}
             <Reveal className="lg:col-span-2">
               <div className="h-full rounded-3xl border border-line bg-paper p-6">
@@ -498,7 +498,7 @@ export default async function Landing() {
             Four steps from a list of names to a plan.
           </h2>
         </Reveal>
-        <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s, i) => (
             <Reveal key={s.title} delay={i * 100}>
               <li className="flex h-full flex-col rounded-3xl border border-line bg-card">
@@ -524,7 +524,7 @@ export default async function Landing() {
         <div className="mx-auto max-w-[85.5rem] px-5 py-24">
           <SectionTag n="04" title="A real run" dark />
           <Reveal>
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end">
               <h2 className="font-serif text-5xl leading-[1.05] sm:text-6xl">Real funds, real rounds, real sources.</h2>
               <p className="text-lg leading-relaxed text-paper/60">
                 {show
@@ -534,7 +534,7 @@ export default async function Landing() {
             </div>
           </Reveal>
           {show ? (
-            <div className="mt-14 grid gap-5 lg:grid-cols-[1fr_1.05fr]">
+            <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.05fr]">
               <Reveal>
                 <RunTerminal lines={show.terminal} label={`flipdd · ${show.date}`} />
               </Reveal>

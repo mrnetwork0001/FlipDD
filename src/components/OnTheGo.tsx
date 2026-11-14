@@ -52,7 +52,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
         <span className="h-px flex-1 bg-line" />
       </div>
       <Reveal>
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <h2 className="font-serif text-5xl leading-[1.05] sm:text-6xl">Between meetings, just ask.</h2>
           <p className="max-w-xl text-lg leading-relaxed text-muted">
             Slush is a day of walking from one table to the next. FlipDD answers on a phone call, in Telegram, or out
@@ -61,7 +61,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
         </div>
       </Reveal>
 
-      <div className="mt-14 grid gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-[1.25fr_1fr]">
         {/* Call it */}
         <Reveal>
           <article className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-night p-6 text-paper sm:p-8">
@@ -121,7 +121,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
           </article>
         </Reveal>
 
-        <div className="grid gap-5">
+        <div className="grid grid-cols-1 gap-5">
           {/* Telegram */}
           <Reveal delay={100}>
             <article className="flex h-full flex-col rounded-3xl border border-line bg-card p-6">

@@ -318,14 +318,14 @@ export default function HeroVisual({ data }: { data?: HeroData }) {
     : Math.min(totalCalls, Math.round(((cur * STAGES + stage + 1) / (FUNDS.length * STAGES)) * totalCalls));
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <div className="overflow-hidden rounded-3xl border border-line bg-card shadow-[0_24px_60px_-40px_rgba(22,19,14,0.45)]">
         {/* Title bar */}
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <div className="text-sm font-semibold">
             Meeting list check
           </div>
-          <span className="font-mono text-[11px] tabular-nums text-muted">
+          <span className="min-w-0 text-right font-mono text-[11px] tabular-nums text-muted">
             {calls} Cala {data ? "requests" : "calls"} · 1 competitor
           </span>
         </div>
@@ -431,7 +431,7 @@ export default function HeroVisual({ data }: { data?: HeroData }) {
         {/* Step log */}
         <div className="flex items-center gap-2.5 border-b border-line bg-night px-5 py-2.5 font-mono text-[11.5px] text-paper/85">
           <span className="text-signal">›</span>
-          <span key={t} className="animate-type truncate">
+          <span key={t} className="animate-type min-w-0 truncate">
             {log}
           </span>
           <span className="ml-0.5 inline-block h-3.5 w-[7px] animate-blink bg-paper/70" />
