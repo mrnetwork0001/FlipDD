@@ -1,3 +1,4 @@
+import { calaKeyFor } from "@/lib/calaKey";
 import { exitsOf, marketOf, meetingPrep } from "@/lib/prep";
 import type { CompetitorSummary, InvestorResult } from "@/lib/types";
 
@@ -11,7 +12,7 @@ export const maxDuration = 300;
  * exits / market: Cala knowledge queries (30 to 60 seconds), loaded after the note opens.
  */
 export async function POST(req: Request) {
-  const apiKey = process.env.CALA_API_KEY;
+  const apiKey = calaKeyFor(req);
   if (!apiKey || apiKey === "your_cala_api_key_here") return Response.json({ error: "CALA_API_KEY is not set." }, { status: 500 });
   const body = (await req.json().catch(() => null)) as {
     part?: string; investor?: InvestorResult; competitors?: CompetitorSummary[]; startupName?: string; description?: string;

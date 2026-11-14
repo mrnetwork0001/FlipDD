@@ -1,3 +1,4 @@
+import { calaKeyFor } from "@/lib/calaKey";
 import { askCala, type AskEvent } from "@/lib/askAgent";
 
 export const runtime = "nodejs";
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
   } | null;
   const question = typeof body?.question === "string" ? body.question.trim().slice(0, 500) : "";
   if (question.length < 5) return Response.json({ error: "Ask a question." }, { status: 400 });
-  const apiKey = process.env.CALA_API_KEY;
+  const apiKey = calaKeyFor(req);
   if (!apiKey || apiKey === "your_cala_api_key_here") {
     return Response.json({ error: "CALA_API_KEY is not set." }, { status: 500 });
   }

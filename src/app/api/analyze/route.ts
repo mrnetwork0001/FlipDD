@@ -1,3 +1,4 @@
+import { calaKeyFor } from "@/lib/calaKey";
 import { analyze } from "@/lib/engine";
 import { newId, saveDoc } from "@/lib/store";
 import { computeRoundRisk } from "@/lib/roundRisk";
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
   if (!input.investors.length) {
     return Response.json({ error: "Add at least one investor to check." }, { status: 400 });
   }
-  const apiKey = process.env.CALA_API_KEY;
+  const apiKey = calaKeyFor(req);
   if (!apiKey || apiKey === "your_cala_api_key_here") {
     return Response.json(
       { error: "CALA_API_KEY is not set. Add it to .env.local and restart the server." },

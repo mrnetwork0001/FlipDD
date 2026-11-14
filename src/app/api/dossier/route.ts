@@ -1,3 +1,4 @@
+import { calaKeyFor } from "@/lib/calaKey";
 import { Cala } from "@/lib/cala";
 import { investorDossier } from "@/lib/dossier";
 
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
   if (investor.length < 2 || investor.length > 120) {
     return Response.json({ error: "Give an investor name." }, { status: 400 });
   }
-  const apiKey = process.env.CALA_API_KEY;
+  const apiKey = calaKeyFor(req);
   if (!apiKey || apiKey === "your_cala_api_key_here") {
     return Response.json({ error: "CALA_API_KEY is not set." }, { status: 500 });
   }

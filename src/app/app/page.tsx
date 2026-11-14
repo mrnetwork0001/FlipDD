@@ -53,6 +53,11 @@ import RadarPanel from "@/components/RadarPanel";
 import FinderPanel from "@/components/FinderPanel";
 import MeetingPrepPanel from "@/components/MeetingPrepPanel";
 import ContactDock from "@/components/ContactDock";
+import OwnCalaKey from "@/components/OwnCalaKey";
+import { installOwnKeyFetch } from "@/lib/client/calaKey";
+
+// Every /api/ call carries the visitor's own Cala key when they have set one.
+if (typeof window !== "undefined") installOwnKeyFetch();
 import AskCalaPanel from "@/components/AskCalaPanel";
 import SpeakButton from "@/components/SpeakButton";
 import { spokenBriefing, spokenDay } from "@/lib/voiceScript";
@@ -1573,6 +1578,7 @@ export default function AppPage() {
               Also works from Claude or Cursor: add <span className="font-mono text-ink/80">/api/mcp</span> on this
               site as an MCP server.
             </p>
+            <OwnCalaKey open={/credits|refused/i.test(error)} />
           </form>
         </aside>
 
@@ -1787,7 +1793,24 @@ export default function AppPage() {
                     )}
                   </div>
                 </div>
-                {error && <p className="mt-3 rounded-lg bg-signal/10 px-3 py-2 text-sm text-signal">{error}</p>}
+                {error && (
+                  <div className="mt-3 rounded-lg bg-signal/10 px-3 py-2 text-sm text-signal">
+                    <p>{error}</p>
+                    {/credits|refused/i.test(error) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormOpen(true);
+                          toggleCollapsed(false);
+                          setTimeout(() => document.getElementById("own-cala-key")?.scrollIntoView({ block: "center" }), 120);
+                        }}
+                        className="mt-2 inline-flex items-center rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-paper hover:bg-signal"
+                      >
+                        Use your own Cala key and try again
+                      </button>
+                    )}
+                  </div>
+                )}
                 {visibleSteps.length > 0 && (running || showAllSteps) && (
                   <ul className={`mt-3 space-y-1.5 border-t border-line pt-3 ${showAllSteps ? "max-h-72 overflow-y-auto" : ""}`}>
                     {visibleSteps.map((s, i) => (
