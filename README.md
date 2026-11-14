@@ -4,9 +4,9 @@
 
 Some investors take a meeting to hear a pitch from a company that competes with one they already backed. FlipDD walks [Cala](https://cala.ai)'s knowledge graph for every investor on a founder's Slush list and gives each one a verdict, a share level (teaser, deck or data room) and a question to ask in the room. Everything is measured by one number: **round exposure**, the share of a founder's meetings that sit within one step of a competitor (0 to 100).
 
-Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: `<APP_URL>` · Demo: `<VIDEO_URL>` · Code: [github.com/mrnetwork0001/FlipDD](https://github.com/mrnetwork0001/FlipDD) (private, access on request)
+Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: [tryflipdd.vercel.app](https://tryflipdd.vercel.app) · Telegram: [@tryflipdd_bot](https://t.me/tryflipdd_bot) · Demo: `<VIDEO_URL>` · Code: [github.com/mrnetwork0001/FlipDD](https://github.com/mrnetwork0001/FlipDD) (private, access on request)
 
-**Judges, start here:** open `/app` and press **Load example**. It checks 8 real funds against Lovable on Cala's graph with no account: about 45 seconds the first time, a few seconds once Cala's answers are cached. Then press **Play my day** to hear the result.
+**Judges, start here:** open [tryflipdd.vercel.app/app](https://tryflipdd.vercel.app/app), press **Load example**, then **Check 8 investors**. It checks 8 real funds against Lovable on Cala's graph with no account, in about a second because the answers are cached. Press **Prep** on Creandum for the meeting note, or **Play my day** to hear the whole round. On a phone, message [@tryflipdd_bot](https://t.me/tryflipdd_bot) `/check Creandum, Northzone vs Lovable`, then `/prep Creandum`.
 
 ---
 
@@ -28,16 +28,17 @@ The whole list then gets a **round view** (`src/lib/roundRisk.ts`). It gives the
 | **Competitors** | Each competitor's recent rounds (amount, valuation, investors) and corporate events such as acquisitions, from Cala. | **Competitors** tab |
 | **Find investors** | Funds that back companies *near* yours (same buyers, different product) and pass the same conflict checks. Backers of direct rivals are dropped, and the dropped list is shown. The example considered 58 and kept 6. | **Find investors** tab |
 | **Slush 2026** | Searches Cala's Slush 2026 event (2,988 attendee companies) for your competitors and your investors' portfolio companies. | **Slush 2026** tab |
-| **Ask Cala** | An agent that answers follow-up questions by calling Cala's own MCP (Model Context Protocol) server. Every call it makes is listed under the answer. | **Ask Cala** tab |
+| **Meeting prep** | One note per investor, built only from Cala's graph. **In 30 seconds:** their stake in your space (and whether it blocks you), who you will likely meet, what to ask, what to hold back. Below it, folded: the partners' backgrounds, your competitor's ARR and headcount over time, how the fund invests, what Cala holds on *you*, their exits and who raised in your space this year. Your own notes and the outcome are saved per meeting. | **Prep** on any row |
 | **Investor profile** | A sourced write-up from Cala's knowledge search: focus, recent deals and partners, with links. | Open a row → **Investor profile** |
 | **Meeting brief** | A shareable, printable page per investor with the verdict, evidence and question. | Open a row → **Share meeting brief** → `/brief/<id>` |
 | **Watchlist** | Follows your competitors' funding news for 90 days through Context.dev. | `/watch/<id>` |
-| **Voice** | **Listen** to any briefing, or **Play my day** for every meeting in order. Ask Cala takes questions by voice. | Investors and Ask Cala tabs |
-| **Telegram** | `/check Creandum, Northzone vs Lovable`, any question, or a voice note. Voice notes get a voice reply. | Your bot (see Deploying) |
-| **Phone line** | Call a Twilio number, say who you're meeting, and hear the result. | `/api/voice/twilio` |
+| **Voice** | **Listen** to any briefing, or **Play my day** for every meeting in order, in an ElevenLabs voice (the browser's own voice is the fallback). | Investors tab, brief page |
+| **Telegram** | `/check Creandum, Northzone vs Lovable`, then `/prep Creandum` for that meeting's note as text and an ElevenLabs voice note. Voice notes work too, and questions are answered from Cala's MCP server. | [@tryflipdd_bot](https://t.me/tryflipdd_bot), or the Telegram button bottom-right |
+| **Phone line** | Call a Twilio number, say who you're meeting, and hear the result. Follow-up questions work on the same call. | The phone button bottom-right, once a number is set |
+| **Your own Cala key** | If FlipDD's credits run out, or you want many checks, paste your own key. It stays in your browser and is sent only with your requests; anything already cached costs it nothing. | Under the form, or the button on a credits error |
 | **MCP server** | FlipDD's own checks as tools for Claude or Cursor: `check_investors`, `find_competitors`, `find_clean_investors`, `investor_profile`, `slush_check`, `watch_news`. | `/api/mcp` |
 
-The app works the same on phones. The form becomes a drawer, and the meeting list is a cart you add funds to from Find investors. **Recent checks** reopens any earlier run without asking Cala again. The header shows how many Cala calls were live and how old any cached answer is.
+Following Cala's feedback, the results page stays calm: one line for the round, one card per meeting with a **Prep** button, and the details (step log, conflict map, round breakdown) on request. Verdicts describe rather than alarm ("Backs your competitor", "One step away"), since backing competitors is normal for investors; the note is about using that, not avoiding them. The app works the same on phones. The form becomes a drawer, and the meeting list is a cart you add funds to from Find investors. **Recent checks** reopens any earlier run without asking Cala again. The header shows how many Cala calls were live and how old any cached answer is.
 
 ## Why Cala is essential
 
@@ -110,7 +111,9 @@ flowchart LR
 | Key | Lives in | Can | Can never |
 | --- | --- | --- | --- |
 | `CALA_API_KEY` | Server env | Read Cala's graph | Reach the browser: no client code reads it |
-| `GEMINI_API_KEY` | Server env | Judge competition, write questions, plan Ask Cala's calls, transcribe and speak | Add facts: prompts carry only Cala's records |
+| `GEMINI_API_KEY` | Server env | Judge competition, write questions, plan the question agent's calls, transcribe voice notes | Add facts: prompts carry only Cala's records |
+| `ELEVENLABS_API_KEY` | Server env | Speak briefings and Telegram voice replies (`/api/speak`, capped per visitor) | Reach the browser: audio comes through the server |
+| A visitor's own Cala key | That visitor's browser | Run that visitor's checks (`x-cala-key` header) | Be stored or logged on the server |
 | `TWILIO_AUTH_TOKEN` | Server env | Verify `X-Twilio-Signature` on every call webhook | Place calls: FlipDD only answers them |
 | `TELEGRAM_WEBHOOK_SECRET` | Server env, Telegram | Prove an update came from Telegram | Read other chats |
 | `FLIPDD_MCP_TOKEN` | Server env, your MCP client | Require a bearer token on `/api/mcp` | Unlock anything else |
@@ -164,7 +167,7 @@ sequenceDiagram
   Note over F,A: Ask Cala live skips the cache
 ```
 
-The founder sees results as they arrive, not at the end. Cala answers are cached for 24 hours (`CALA_CACHE_HOURS`), and the header shows how many calls were live. Ticking **Ask Cala live** skips the cache entirely. If Cala refuses the key (403), the run stops with a clear message instead of reporting "no conflict" for everyone.
+The founder sees results as they arrive, not at the end. Cala answers are cached for 24 hours (`CALA_CACHE_HOURS`), and the header shows how many calls were live. Ticking **Ask Cala live** skips the cache entirely. If Cala refuses the key (403) or it runs out of credits (402), the run stops with a clear message instead of reporting "no conflict" for everyone.
 
 ### The phone line
 
@@ -208,7 +211,7 @@ flowchart LR
   end
   subgraph Act
     direction LR
-    G[Play my day] --> H[Share brief<br/>or print] --> I[Add clean funds<br/>from Find investors]
+    G[Prep note<br/>and your notes] --> H[Play my day<br/>or Telegram /prep] --> I[Share brief<br/>or add clean funds]
   end
   Prepare --> Read --> Act
 ```
@@ -229,7 +232,9 @@ No account, wallet or key is needed in the web app. History lives in the browser
 
 - **The AI never invents facts.** Gemini's prompts contain only records FlipDD pulled from Cala, and every finding in the app links back to its sources. The Ask agent answers only from tool results and lists every call it made.
 - **Unknown is not clear.** Investors Cala can't find are **Not found in Cala**, and those with fewer than 5 records are **Too little data**. Neither is shown as clean.
-- **A refused key is loud.** A 403 from Cala stops the run with an explanation (`REFUSED_MESSAGE` in `src/lib/cala.ts`) rather than showing every row as clear.
+- **A refused key is loud.** A 403, or a 402 when credits run out, stops the run with an explanation (`REFUSED_MESSAGE`, `CREDITS_MESSAGE` in `src/lib/cala.ts`) and clears the rows rather than showing them as clear. The app then offers **Use your own Cala key**.
+- **Professional facts only.** Meeting prep shows partners' roles, past companies and schools, and strips birth years and personal details even when Cala's description includes them.
+- **The fullest record wins.** A firm can be a dozen Cala records (Seedcamp: the firm, "Seedcamp Limited", its GP and fund vehicles). FlipDD reads every exact match, lets the one with the most investments lead and merges the firm's own fund vehicles, so a thin duplicate can't hide a real stake.
 - **Limits.** 12 investors and 6 competitors per check (`src/app/api/analyze/route.ts`). The Ask agent makes at most 10 Cala calls, one slow query at a time. Concurrency is 5 Cala calls and 6 Gemini calls by default, and phone checks stop after 4 minutes.
 - **Webhooks are verified.** Twilio requests are checked with HMAC-SHA1 against `TWILIO_AUTH_TOKEN`, and the test matches Twilio's official library. Telegram updates must carry `TELEGRAM_WEBHOOK_SECRET`. Both lines can be limited to listed chats or callers (`TELEGRAM_ALLOWED_CHATS`, `TWILIO_ALLOWED_CALLERS`).
 - **Tests.** 38 unit tests cover scoring, name matching, round risk, news matching, Telegram formatting, spoken text and phone webhooks. All 38 passed on 14 November 2026.
@@ -239,13 +244,13 @@ No account, wallet or key is needed in the web app. History lives in the browser
 | Real | Not real, or labelled |
 | --- | --- |
 | Every investor, round, person and company comes from Cala during the run | If no run has been saved yet, the landing page shows an illustration labelled "Illustration" |
-| Gemini's competition judgements, written questions, transcripts and speech | Cached Cala answers (up to 24 hours old), with their age shown in the header |
+| Gemini's competition judgements, written questions and transcripts; ElevenLabs speech | Cached Cala answers (up to 24 hours old), with their age shown in the header |
 | Context.dev news articles in the watchlist | `TELEGRAM_DRY_RUN=1` writes bot replies to a log instead of sending them (local testing only) |
 | Telegram, Twilio and MCP requests run the same engine as the web app | Nothing is simulated in a check itself |
 
 ## Tech stack
 
-Next.js 14.2 (App Router) · React 18 · TypeScript (strict) · Tailwind CSS · Cala REST API and MCP server · Gemini (newest Flash model, picked automatically; Flash TTS for speech) · Context.dev News API · Telegram Bot API · Twilio Programmable Voice with Amazon Polly neural voices · Upstash Redis (optional) · ffmpeg-static · Node test runner with native TypeScript.
+Next.js 14.2 (App Router) on Vercel · React 18 · TypeScript (strict) · Tailwind CSS · Cala REST API and MCP server · Gemini (newest Flash model, picked automatically) · ElevenLabs (Flash v2.5) · Context.dev News API · Telegram Bot API (webhook) · Twilio Programmable Voice with Amazon Polly neural voices · Upstash Redis · ffmpeg-static · Remotion for the demo film · Node test runner with native TypeScript.
 
 ## Run it locally
 
@@ -264,9 +269,11 @@ npm run typecheck
 | `CALA_API_KEY` | All facts | Checks refuse to run |
 | `CALA_CACHE_HOURS` | How long Cala answers are reused (default 24) | 24 |
 | `CALA_MAX_CONCURRENT` | Parallel Cala calls (default 5) | 5 |
-| `GEMINI_API_KEY` | Competition judgement, questions, Ask Cala, voice | Lookalike check uses shared words; Ask Cala and voice are off |
+| `GEMINI_API_KEY` | Competition judgement, meeting questions, the question agent, voice-note transcription | Lookalike check uses shared words; questions and voice notes are off |
 | `GEMINI_MODEL`, `GEMINI_MAX_CONCURRENT` | Force a model; parallel calls (default 6) | Newest Flash model; 6 |
-| `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE` | Telegram voice replies (default voice Kore) | Newest Flash TTS model |
+| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_SPEED` | Briefings and Telegram voice notes (default voice Liam, 1.15×) | Browser voice in the app; Gemini speech on Telegram |
+| `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE` | Fallback Telegram speech (default voice Kore) | Newest Flash TTS model |
+| `NEXT_PUBLIC_TELEGRAM_BOT`, `NEXT_PUBLIC_PHONE_NUMBER` | The Telegram and phone buttons (built in at deploy time) | `tryflipdd_bot`; the phone button explains the line until a number is set |
 | `CONTEXT_DEV_API_KEY` | Watchlist news | Watchlist is off |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Shared store on Upstash Redis | Files under `FLIPDD_DATA_DIR` |
 | `FLIPDD_DATA_DIR` | File store location | `.cache/` (or `/tmp/flipdd` on Vercel) |
@@ -275,7 +282,7 @@ npm run typecheck
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ALLOWED_CHATS` | Telegram bot | Bot is off |
 | `TWILIO_AUTH_TOKEN`, `TWILIO_ACCOUNT_SID`, `TWILIO_ALLOWED_CALLERS`, `TWILIO_VOICE` | Phone line | Signatures are not checked |
 
-**Test status** (14 November 2026):
+**Test status** (14 November 2026, after the meeting-prep and voice changes):
 
 ```
 ℹ tests 38
@@ -290,8 +297,8 @@ npm run typecheck
 3. **Variables.** Add the keys from the table above, and set `FLIPDD_PUBLIC_URL` to the deployment address.
 4. **Check.** `/api/health` lists which features are configured (yes or no only) and whether storage is shared.
 5. **Warm.** Run `node scripts/warm.mjs <url>` once. It runs the example so the landing page shows a real result and the first checks are quick.
-6. **Telegram.** Create a bot with @BotFather, set `TELEGRAM_BOT_TOKEN`, then run `node scripts/telegram-webhook.mjs <url>`.
-7. **Phone.** Buy a Twilio number, set `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`, then run `npm run twilio <number>`. This points the number's voice webhook at `/api/voice/twilio`.
+6. **Telegram.** Create a bot with @BotFather, set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`, redeploy, then run `node scripts/telegram-webhook.mjs <url>`. Telegram then calls `/api/telegram` directly: no server or polling process needed.
+7. **Phone.** Buy a Twilio number, set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` and `NEXT_PUBLIC_PHONE_NUMBER`, redeploy, then run `npm run twilio <number>` (or set the number's "A call comes in" webhook to `POST /api/voice/twilio` in the Twilio console).
 
 A long-running server also works: `railway.json` and `nixpacks.toml` (which installs ffmpeg) are included. Set `FLIPDD_DATA_DIR` to a persistent volume.
 
@@ -307,14 +314,16 @@ src/
     lab/                      background effects preview
     api/
       analyze/                runs a check, streams NDJSON, saves the run
-      ask/                    Ask Cala agent stream
+      prep/                   meeting prep: core facts, exits, market raises
+      speak/                  ElevenLabs speech for Listen and Play my day
+      ask/                    question agent (used by Telegram and the phone line)
       discover/               competitors from a description
       dossier/                sourced investor profile
       slush/                  the Slush 2026 event
       brief/ run/[id]/ watch/ saved documents
       mcp/                    FlipDD as an MCP server
       telegram/               bot webhook
-      transcribe/             speech to text for the mic
+      transcribe/             speech to text
       voice/twilio/           phone line
       health/                 feature and storage status
       art/                    which illustrations exist
@@ -322,7 +331,10 @@ src/
     engine.ts                 the checks, verdicts, share levels, finder
     cala.ts                   Cala client, cache, concurrency, refused key
     calaMcp.ts                Cala MCP client
-    askAgent.ts               Ask Cala agent (Gemini function calling)
+    prep.ts                   meeting prep from the graph: team, stake signal, rival curves, your record
+    askAgent.ts               question agent over Cala's MCP server (Gemini function calling)
+    elevenlabs.ts             ElevenLabs speech (MP3 for the app, Ogg Opus for Telegram)
+    calaKey.ts contact.ts     visitor's own Cala key; Telegram and phone links
     gemini.ts                 model choice, JSON calls, competition judge
     slush.ts                  Slush 2026 attendees and matching
     roundRisk.ts              round exposure, hubs, meeting order
@@ -335,11 +347,13 @@ src/
     telegram.ts telegramText.ts           Telegram bot
     twiml.ts phoneCall.ts     phone line TwiML, signatures, jobs
     store.ts                  files or Upstash Redis
+    client/                   browser-side speech player and own-key fetch
     showcase.ts example.ts    landing page run and built-in example
     types.ts                  shared types
-  components/                 panels, conflict map, live scan, voice buttons, glyphs
+  components/                 MeetingPrepPanel, ContactDock, OwnCalaKey, panels, conflict map, live scan, voice buttons, glyphs
 scripts/                      warm, telegram polling and webhook, twilio setup
 tests/                        unit tests (node --test)
+video/                        the demo film (Remotion): script.json, scenes, capture and audio scripts
 public/brand/                 logos and illustrations
 ```
 
