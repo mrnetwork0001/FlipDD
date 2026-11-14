@@ -5,6 +5,7 @@
 // is likeliest to lead, and the order to take the meetings in. Computed by
 // computeRoundRisk from the same results as the rows below.
 
+import { useState } from "react";
 import { Crown, GitMerge, Loader2, Route } from "lucide-react";
 import type { Exposure, RoundRisk } from "@/lib/types";
 import SpeakButton from "./SpeakButton";
@@ -43,6 +44,7 @@ export default function RoundRiskPanel({
   /** Scrolls to an investor's row, by display name. */
   onSelect: (name: string) => void;
 }) {
+  const [more, setMore] = useState(false);
   if (!risk.settled) return null;
   const exposureOf = new Map(risk.investors.map((i) => [i.name, i.exposure]));
   const present = (Object.keys(EXPOSURE_STYLE) as Exposure[]).filter((e) => risk.counts[e] > 0);
@@ -106,17 +108,22 @@ export default function RoundRiskPanel({
             </li>
           ))}
         </ol>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
           {present.map((e) => (
             <span key={e} className="inline-flex items-center gap-1.5 text-[11px] text-muted">
               <span className={`h-2 w-2 rounded-sm ${EXPOSURE_STYLE[e].dot}`} />
               {EXPOSURE_STYLE[e].label} · {risk.counts[e]}
             </span>
           ))}
+          <button type="button" onClick={() => setMore((v) => !v)} className="ml-auto text-[11px] font-semibold text-muted underline-offset-2 hover:text-ink hover:underline">
+            {more ? "Less" : "More about your round"}
+          </button>
         </div>
       </div>
 
-      {/* Reach, hubs, leads */}
+      {/* Reach, hubs, leads: on request, so the page stays about the meetings */}
+      {more && (
+      <>
       <div className="grid gap-px bg-line md:grid-cols-3">
         <div className="bg-card p-5">
           <p className="label">Who can reach your competitors</p>
@@ -228,6 +235,8 @@ export default function RoundRiskPanel({
         Exposure averages your meetings: a stake in a competitor counts 1, a weaker or late-stage stake 0.7, a
         co-investor path its link strength ÷ 200, a lookalike 0.25, too little on record 0.15, clear 0.
       </p>
+      </>
+      )}
     </section>
   );
 }

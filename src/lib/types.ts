@@ -375,13 +375,13 @@ export const LEVEL_RANK: Record<Level, number> = {
 };
 
 export const LEVEL_LABEL: Record<Level, string> = {
-  direct_high: "Direct conflict",
-  direct_moderate: "Weaker conflict",
-  indirect: "Indirect link",
-  possible: "Possible overlap",
+  direct_high: "Backs your competitor",
+  direct_moderate: "Smaller stake in a competitor",
+  indirect: "One step away",
+  possible: "Lookalike in portfolio",
   thin: "Too little data",
   unresolved: "Not found",
-  clear: "No conflict found",
+  clear: "No tie found",
 };
 
 // ---------- shareable briefs ----------

@@ -18,6 +18,7 @@ import {
   PanelLeftOpen,
   RotateCcw,
   MessageCircleQuestion,
+  NotebookPen,
   Radar,
   ShieldCheck,
   UserRound,
@@ -50,7 +51,7 @@ import SlushPanel from "@/components/SlushPanel";
 import RoundRiskPanel from "@/components/RoundRiskPanel";
 import RadarPanel from "@/components/RadarPanel";
 import FinderPanel from "@/components/FinderPanel";
-import DossierPanel from "@/components/DossierPanel";
+import MeetingPrepPanel from "@/components/MeetingPrepPanel";
 import AskCalaPanel from "@/components/AskCalaPanel";
 import SpeakButton from "@/components/SpeakButton";
 import { spokenBriefing, spokenDay } from "@/lib/voiceScript";
@@ -350,6 +351,7 @@ function InvestorRow({
   running,
   runId,
   slushReport,
+  onPrep,
 }: {
   rank: number;
   result: InvestorResult;
@@ -358,6 +360,7 @@ function InvestorRow({
   running: boolean;
   runId: string;
   slushReport?: SlushReport;
+  onPrep: () => void;
 }) {
   const pending = !result.done.direct;
   const style = LEVEL_STYLE[result.level];
@@ -373,12 +376,13 @@ function InvestorRow({
       id={`row-${encodeURIComponent(result.input)}`}
       className="animate-rise scroll-mt-20 overflow-hidden rounded-2xl border border-line bg-card"
     >
+      <div className="flex items-stretch">
       <button
         type="button"
         onClick={onToggle}
         disabled={pending}
         aria-expanded={open}
-        className="flex w-full items-stretch text-left transition hover:bg-white/60 disabled:cursor-default"
+        className="flex min-w-0 flex-1 items-stretch text-left transition hover:bg-white/60 disabled:cursor-default"
       >
         <span className={`w-1.5 shrink-0 ${pending ? "bg-line" : style.bar}`} />
         <span className="flex min-w-0 flex-1 flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:gap-5">
@@ -431,7 +435,6 @@ function InvestorRow({
             ) : (
               <>
                 <span className="mt-1 block text-sm text-ink/85">{result.headline}</span>
-                {result.resolved && <ContextLine activity={result.activity} />}
               </>
             )}
           </span>
@@ -443,11 +446,25 @@ function InvestorRow({
           )}
         </span>
         {!pending && (
-          <span className="flex items-center pr-4 text-muted">
+          <span className="flex items-center pr-2 text-muted">
             <ChevronDown className={`h-5 w-5 transition ${open ? "rotate-180" : ""}`} />
           </span>
         )}
       </button>
+      {!pending && result.resolved && (
+        <span className="flex items-center pr-4">
+          <button
+            type="button"
+            onClick={onPrep}
+            disabled={running}
+            title={running ? "Available when the check finishes" : `Who you'll meet at ${result.name}, what they know, and your note`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-2 text-xs font-semibold text-paper transition hover:bg-signal disabled:opacity-40"
+          >
+            <NotebookPen className="h-3.5 w-3.5" /> Prep
+          </button>
+        </span>
+      )}
+      </div>
 
       {open && !pending && (
         <div className="grid gap-6 border-t border-line bg-paper/50 p-5 lg:grid-cols-[1.35fr_1fr]">
@@ -457,6 +474,7 @@ function InvestorRow({
               <p className="label !mb-0">Why</p>
               <SpeakButton text={() => spokenBriefing(result)} label="Listen to briefing" />
             </div>
+            {result.resolved && <ContextLine activity={result.activity} />}
             {peopleTies.map((t) => (
               <Finding key={`${t.personId}-${t.competitor}`} tone="red" tag={t.side === "self" ? "Person · this is them" : "Person · on their team"} title={t.person}>
                 <p className="mt-2 text-sm leading-relaxed text-ink/85">{t.text}.</p>
@@ -604,7 +622,7 @@ function InvestorRow({
               </div>
             </div>
             <ShareBriefButton runId={runId} investor={result.input} ready={!running && result.done.scan} />
-            {result.resolved && <DossierPanel investor={result.name} />}
+
           </div>
         </div>
       )}
@@ -634,6 +652,8 @@ export default function AppPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [showAllSteps, setShowAllSteps] = useState(false);
   const [runId, setRunId] = useState("");
+  const [showMap, setShowMap] = useState(false);
+  const [prepFor, setPrepFor] = useState<InvestorResult | null>(null);
   const [ai, setAi] = useState<{ enabled: boolean; model?: string } | null>(null);
   const [watchState, setWatchState] = useState<{ busy: boolean; url?: string; error?: string }>({ busy: false });
   const [slush, setSlush] = useState<SlushReport | undefined>();
@@ -1595,7 +1615,6 @@ export default function AppPage() {
                   "slush",
                   "Slush 2026",
                 ],
-                ["ask", "Ask Cala"],
               ] as const
             ).map(([key, label]) => (
               <button
@@ -1611,11 +1630,9 @@ export default function AppPage() {
                 {key === "slush" && <MapPin className="h-3.5 w-3.5" />}
                 {key === "competitors" && <Radar className="h-3.5 w-3.5" />}
                 {key === "finder" && <ShieldCheck className="h-3.5 w-3.5" />}
-                {key === "ask" && <MessageCircleQuestion className="h-3.5 w-3.5" />}
                 {label}
                 {key === "slush" && running && !slush && <Loader2 className="h-3 w-3 animate-spin" />}
                 {key === "finder" && running && !finder && <Loader2 className="h-3 w-3 animate-spin" />}
-                {key === "ask" && askStatus === "busy" && <Loader2 className="h-3 w-3 animate-spin" />}
                 {key === "slush" && slushAlert && (
                   <span
                     title={slushAlert.text}
@@ -1627,16 +1644,13 @@ export default function AppPage() {
                     {slushAlert.count || slushAlert.similar}
                   </span>
                 )}
-                {key === "ask" && askStatus === "ready" && !askSeen && (
-                  <span className="h-2 w-2 rounded-full bg-signal" aria-label="New answer" />
-                )}
               </button>
             ))}
           </div>
 
 
           {/* Kept mounted on other tabs, so a running question keeps its answer. */}
-          <div className={tab === "ask" ? "" : "hidden"}>
+          <div className="hidden">
             <AskCalaPanel
               startupName={form.startupName}
               description={form.description}
@@ -1752,13 +1766,13 @@ export default function AppPage() {
                         : `Checked ${order.length} investor${order.length === 1 ? "" : "s"} in ${fmtElapsed(elapsed)}`}
                   </div>
                   <div className="flex items-center gap-3">
-                    {steps.length > 5 && (
+                    {(running ? steps.length > 5 : steps.length > 0) && (
                       <button
                         type="button"
                         onClick={() => setShowAllSteps((v) => !v)}
                         className="text-xs font-medium text-muted underline-offset-2 hover:text-ink hover:underline"
                       >
-                        {showAllSteps ? "Show recent steps" : `Show all ${steps.length} steps`}
+                        {showAllSteps ? (running ? "Show recent steps" : "Hide steps") : `Show all ${steps.length} steps`}
                       </button>
                     )}
                     {!running && (
@@ -1773,7 +1787,7 @@ export default function AppPage() {
                   </div>
                 </div>
                 {error && <p className="mt-3 rounded-lg bg-signal/10 px-3 py-2 text-sm text-signal">{error}</p>}
-                {visibleSteps.length > 0 && (
+                {visibleSteps.length > 0 && (running || showAllSteps) && (
                   <ul className={`mt-3 space-y-1.5 border-t border-line pt-3 ${showAllSteps ? "max-h-72 overflow-y-auto" : ""}`}>
                     {visibleSteps.map((s, i) => (
                       <li key={`${steps.length}-${i}`} className="flex items-start gap-2.5 text-xs leading-relaxed">
@@ -1791,7 +1805,7 @@ export default function AppPage() {
               )}
 
               {/* Competitors */}
-              {competitorRows.length > 0 && (
+              {competitorRows.length > 0 && tab === "competitors" && (
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="label !mb-0">Competitors</span>
                   {competitorRows.map((c) => (
@@ -1851,8 +1865,13 @@ export default function AppPage() {
                 }}
               />
 
-              {/* Map */}
-              {rows.length > 0 && (
+              {/* Map, on request */}
+              {rows.length > 0 && !running && (
+                <button type="button" onClick={() => setShowMap((v) => !v)} className="text-xs font-semibold text-muted underline-offset-2 hover:text-ink hover:underline">
+                  {showMap ? "Hide the map" : "Show how they connect (map)"}
+                </button>
+              )}
+              {rows.length > 0 && showMap && (
                 <ConflictMap
                   rows={rows}
                   competitors={competitorRows}
@@ -1873,9 +1892,20 @@ export default function AppPage() {
                     onToggle={() => setOpen((o) => ({ ...o, [r.input]: !o[r.input] }))}
                     runId={runId}
                     slushReport={slush}
+                    onPrep={() => setPrepFor(r)}
                   />
                 ))}
               </ol>
+              {prepFor && (
+                <MeetingPrepPanel
+                  investor={rows.find((x) => x.input === prepFor.input) || prepFor}
+                  competitors={competitorRows}
+                  startupName={form.startupName}
+                  description={form.description}
+                  runId={runId}
+                  onClose={() => setPrepFor(null)}
+                />
+              )}
 
                 </>
               )}
