@@ -10,6 +10,8 @@ import CalaLogo from "@/components/CalaLogo";
 import FlipLogo from "@/components/FlipLogo";
 import MobileNav from "@/components/MobileNav";
 import OnTheGo from "@/components/OnTheGo";
+import ContactDock from "@/components/ContactDock";
+import { PHONE_NUMBER, TELEGRAM_BOT } from "@/lib/contact";
 import { FundGraph } from "@/components/bg/Backgrounds";
 import { DisclosureMeter, FlipGlyph } from "@/components/Glyphs";
 import { loadShowcase, type Showcase } from "@/lib/showcase";
@@ -621,7 +623,7 @@ export default async function Landing() {
       </section>
 
       {/* On the go: phone line, Telegram, spoken briefings */}
-      <OnTheGo phone={process.env.FLIPDD_PHONE_NUMBER?.trim()} telegram={process.env.FLIPDD_TELEGRAM_BOT?.trim()} />
+      <OnTheGo phone={PHONE_NUMBER || undefined} telegram={TELEGRAM_BOT} />
 
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-paper/10 bg-night text-paper">
@@ -663,6 +665,7 @@ export default async function Landing() {
           </div>
         </div>
       </section>
+      <ContactDock />
     </main>
   );
 }

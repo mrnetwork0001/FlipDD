@@ -52,6 +52,7 @@ import RoundRiskPanel from "@/components/RoundRiskPanel";
 import RadarPanel from "@/components/RadarPanel";
 import FinderPanel from "@/components/FinderPanel";
 import MeetingPrepPanel from "@/components/MeetingPrepPanel";
+import ContactDock from "@/components/ContactDock";
 import AskCalaPanel from "@/components/AskCalaPanel";
 import SpeakButton from "@/components/SpeakButton";
 import { spokenBriefing, spokenDay } from "@/lib/voiceScript";
@@ -1979,6 +1980,7 @@ export default function AppPage() {
           </button>
         </div>
       )}
+      <ContactDock desktopLeft={formCollapsed ? "" : "lg:left-[412px]"} />
     </div>
   );
 }
