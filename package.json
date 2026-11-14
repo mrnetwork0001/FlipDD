@@ -1,0 +1,38 @@
+{
+  "name": "flipdd",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FlipDD — Reverse Due Diligence on Investors for Founders, powered by Cala Knowledge Graph",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3001}",
+    "lint": "next lint",
+    "test": "node --no-warnings --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit --incremental false",
+    "build:check": "NEXT_DIST_DIR=.next-build next build",
+    "warm": "node scripts/warm.mjs",
+    "telegram": "node scripts/telegram.mjs",
+    "twilio": "node scripts/twilio-number.mjs"
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.11.3",
+    "ffmpeg-static": "^5.3.0",
+    "lucide-react": "^0.460.0",
+    "next": "14.2.18",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.6",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
