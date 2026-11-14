@@ -15,6 +15,10 @@ import type {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const SLOW_MESSAGE =
+  "Cala's rate limit slowed this check down, so it stopped before the time limit, and nothing here is a result yet. " +
+  "Everything fetched so far is saved: run the check again to finish it (it picks up where it stopped), or use your own Cala key.";
+
 export const maxDuration = 300; // the most Vercel allows on Hobby
 
 const MAX_INVESTORS = 12;
@@ -148,7 +152,13 @@ export async function POST(req: Request) {
         send(event);
       };
       send({ type: "run", id: runId });
-      analyze(input, emit, apiKey, req.signal).finally(async () => {
+      // Stop cleanly before the host's 300 s limit. When Cala's rate limit holds a
+      // check back (about 10 requests a minute on a free key), the founder gets
+      // what was found, and everything fetched is cached for the next run.
+      const budget = AbortSignal.timeout(Number(process.env.CHECK_BUDGET_MS || 270_000));
+      const signal = AbortSignal.any([req.signal, budget]);
+      analyze(input, emit, apiKey, signal).finally(async () => {
+        if (!finished && budget.aborted && !req.signal.aborted && !closed) send({ type: "error", message: SLOW_MESSAGE });
         if (finished) await pendingDone;
         else await saveRun();
         if (closed) return;

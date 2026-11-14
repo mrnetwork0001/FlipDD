@@ -867,8 +867,9 @@ export default function AppPage() {
       case "error":
         setError(event.message);
         setPhase("error");
-        // A refused key means every "not found" on screen is false: clear them.
-        if (/refused/i.test(event.message)) {
+        // A refused key, or a check stopped by Cala's rate limit, means the "not found"
+        // and "clear" verdicts on screen were never really checked: clear them.
+        if (/refused|rate limit/i.test(event.message)) {
           setInvestors({});
           setCompetitors({});
           setSlush(undefined);
@@ -1578,7 +1579,7 @@ export default function AppPage() {
               Also works from Claude or Cursor: add <span className="font-mono text-ink/80">/api/mcp</span> on this
               site as an MCP server.
             </p>
-            <OwnCalaKey open={/credits|refused/i.test(error)} />
+            <OwnCalaKey open={/credits|refused|rate limit/i.test(error)} />
           </form>
         </aside>
 
@@ -1796,7 +1797,7 @@ export default function AppPage() {
                 {error && (
                   <div className="mt-3 rounded-lg bg-signal/10 px-3 py-2 text-sm text-signal">
                     <p>{error}</p>
-                    {/credits|refused/i.test(error) && (
+                    {/credits|refused|rate limit/i.test(error) && (
                       <button
                         type="button"
                         onClick={() => {

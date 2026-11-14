@@ -179,6 +179,8 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
     text: `Checking <b>${parsed.investors.length}</b> investor${parsed.investors.length === 1 ? "" : "s"} against <b>${esc(parsed.competitors.join(", "))}</b> in Cala's graph. First checks take a minute or two; repeats are quick.`,
   });
   const typing = setInterval(() => tg("sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => undefined), 4500);
+  // Finish before the host's 300 s limit; the cache keeps what was fetched.
+  const budget = AbortSignal.timeout(Number(process.env.CHECK_BUDGET_MS || 250_000));
   const latest = new Map<string, InvestorResult>();
   const comps = new Map<string, CompetitorSummary>();
   let slush: SlushReport | undefined;
@@ -193,10 +195,12 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
         if (e.type === "error") failure = e.message;
       },
       apiKey,
+      budget,
     );
   } finally {
     clearInterval(typing);
   }
+  if (!failure && budget.aborted) failure = "Cala's rate limit slowed this check down, so it stopped before giving answers. What was fetched is saved: send the same /check again to finish it.";
   if (failure) {
     await sendLong(chatId, `The check stopped: ${esc(failure)}`);
     return;

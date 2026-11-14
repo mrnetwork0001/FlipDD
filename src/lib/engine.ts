@@ -2177,6 +2177,8 @@ export async function analyze(
       emit({ type: "error", message: refusedMessage });
       return;
     }
+    // Stopped (time budget or the founder cancelled): calls that never ran must not read as "nothing found".
+    if (signal?.aborted) return;
 
     // Start the slow portfolio scans now so they run alongside the leak-path work.
     const scans = investors.map((I, idx) => (I ? scanPortfolio(idx) : Promise.resolve()));
@@ -2210,7 +2212,10 @@ export async function analyze(
       emit({ type: "error", message: refusedMessage });
       return;
     }
+    // Stopped (time budget or the founder cancelled): calls that never ran must not read as "nothing found".
+    if (signal?.aborted) return;
 
+    if (signal?.aborted) return;
     emit({ type: "done", ms: Date.now() - started });
   } catch (err) {
     emit({ type: "error", message: (err as Error).message });
