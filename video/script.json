@@ -1,5 +1,5 @@
 {
- "title": "FlipDD: check your investors back",
+ "title": "FlipDD: know who is across the table",
  "model": "eleven_multilingual_v2",
  "length": "about 1:30",
  "voices": {
@@ -38,110 +38,95 @@
  "scenes": [
   {
    "id": "open",
-   "seconds": 6,
-   "visual": "Frame 0 is already full: a cream meeting card reading 'Next meeting \u00b7 Creandum'. A red line snaps from it to a 'Lovable' node at 1.2 s; the verdict chip 'Backed Lovable \u00b7 Feb 2025' stamps in at 2.2 s with a hard thud. Burned-in captions from frame 0 for muted autoplay.",
+   "seconds": 6.5,
+   "visual": "Frame 0 full: 'Next meeting \u00b7 Creandum' card. Red line to Lovable on 'already', stamp 'BACKED LOVABLE, FEB 2025' on 'competitor'. Second line types: That's normal. Walking in blind isn't.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "Your next investor meeting already backed your competitor. They just want to hear your pitch."
+     "text": "Your next investor already backed your competitor. That's normal. Walking in blind isn't."
     }
    ]
   },
   {
    "id": "problem",
-   "seconds": 8.4,
-   "visual": "Dark. Deck pages, a customer list and a roadmap slide travel along the red line out of the founder's card, one by one, into the competitor node.",
+   "seconds": 8.5,
+   "visual": "Snowy Slush hall. Two columns of kinetic type: what the investor knows vs what the founder knows.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "At Slush, founders pitch back to back. Nobody checks who's across the table. Your deck can walk straight to a rival."
+     "text": "They know your market and your rival's numbers. Most founders walk in knowing a name."
     }
    ]
   },
   {
    "id": "turn",
-   "seconds": 6,
-   "visual": "Full-bleed FlipDD red. The FlipDD mark turns over (the flip) and the wordmark lands. Tagline in big kinetic type, accent word 'back' in italic serif.",
+   "seconds": 6.5,
+   "visual": "Full red, FlipDD mark flips, tagline.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "FlipDD flips the due diligence. Check your investors back, before you send the deck.",
-     "say": "Flip-D-D flips the due diligence. Check your investors back, before you send the deck."
+     "text": "FlipDD flips the due diligence. Check your investors back, before the meeting.",
+     "say": "Flip-D-D flips the due diligence. Check your investors back, before the meeting."
     }
    ]
   },
   {
    "id": "check",
-   "seconds": 11,
-   "visual": "Live footage of /app recorded 14 Nov 2026 14:04 UTC: Load example, Ask Cala live ticked, Check; the live scan board fills; header reads 90 live, cache off, 8.0 s.",
+   "seconds": 10,
+   "visual": "Footage of tryflipdd.vercel.app/app: Load example, Check, verdict cards fill from Cala records cached today; header shows the counts.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "Paste your meeting list and your competitors. FlipDD walks the Cala graph live. Ninety calls, in eight seconds.",
-     "say": "Paste your meeting list and your competitors. Flip-D-D walks the Kahla graph live. Ninety calls, in eight seconds."
+     "text": "Paste your meeting list and your competitor. FlipDD walks the Cala graph: over a hundred records, in seconds.",
+     "say": "Paste your meeting list and your competitor. Flip-D-D walks the Kahla graph: over a hundred records, in seconds."
     }
    ]
   },
   {
    "id": "ties",
-   "seconds": 14,
-   "visual": "Camera moves across the real rows. Each tie lights as it is named: Creandum row (Direct, red), Northzone row with the path Northzone to Accel to Lovable drawn on the motif line, Atomico row (lookalike: Framer), then a Person finding chip.",
+   "seconds": 11,
+   "visual": "Rows: Creandum (Backs your competitor), Northzone (One step away via Accel), Atomico (Lookalike).",
    "lines": [
     {
      "voice": "narrator",
-     "text": "It finds four kinds of tie. A direct stake: Creandum backed Lovable. One step away: Northzone co-invests with Accel, Lovable's lead. A lookalike. And a partner on a rival's board."
+     "text": "Every tie, sourced. Creandum backed Lovable. Northzone co-invests with Accel, Lovable's lead. Others hold a lookalike."
     }
    ]
   },
   {
-   "id": "round",
-   "seconds": 10,
-   "visual": "Footage zooms into the round panel. '4 of your 8 meetings are within one step of Lovable' types on; the score counts to 41/100; the suggested meeting order slides in, safest first.",
+   "id": "prep",
+   "seconds": 16,
+   "visual": "Prep panel on Creandum: In 30 seconds card, then Who you'll meet (Sabina Wizander), then Lovable's ARR and headcount bars.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "Then it reads your whole round. Four of eight meetings sit one step from Lovable. Meet the safest first."
-    }
-   ]
-  },
-  {
-   "id": "find",
-   "seconds": 6.4,
-   "visual": "Find investors tab footage: 58 considered counts down to 6 clean cards; the 8 dropped ones fall away in red.",
-   "lines": [
-    {
-     "voice": "narrator",
-     "text": "It finds the clean ones too. Six funds near your market, with no tie to your rivals."
+     "text": "Then tap Prep. Who's likely across the table, and what they did before. What they already know about Lovable: seventeen million in revenue to seventy-five. What to ask, and what to hold back."
     }
    ]
   },
   {
    "id": "go",
-   "seconds": 15,
-   "visual": "Light. The call mark rings. Phone screen: the real call (owner's screen recording if available). Caller and FlipDD bubbles appear word-synced. Then quick cuts: a Telegram voice note getting a voice reply, and Play my day in the app.",
+   "seconds": 14,
+   "visual": "Phone: Telegram /prep Creandum, note and a voice note arrive (owner's screen recording placeholder). Then the call mark rings: phone line placeholder.",
    "lines": [
     {
      "voice": "narrator",
-     "text": "Between meetings, just call."
-    },
-    {
-     "voice": "caller",
-     "text": "I'm meeting Creandum and Northzone. My competitor is Lovable."
+     "text": "Between meetings, it's on your phone. Ask the Telegram bot, and the note comes back as a voice note."
     },
     {
      "voice": "flipdd",
-     "text": "Creandum: direct conflict. Backed Lovable, February 2025. Teaser only."
+     "text": "Creandum. Expect the comparison. Likely across the table: Sabina Wizander, Partner."
     },
     {
      "voice": "narrator",
-     "text": "Or use Telegram. Or press Play my day."
+     "text": "Or just call."
     }
    ]
   },
   {
    "id": "real",
-   "seconds": 7,
-   "visual": "Dark. The Cala logo; a source link on a finding opens. One line: 'Every fact from Cala. Every finding sourced.'",
+   "seconds": 5,
+   "visual": "Dark, Cala logo, source chips.",
    "lines": [
     {
      "voice": "narrator",
@@ -152,8 +137,8 @@
   },
   {
    "id": "close",
-   "seconds": 5,
-   "visual": "Full-bleed red, the FlipDD logo, the live URL, 'Built on Cala \u00b7 Junction 2026'. Optional 3 s founder cameo just before the logo.",
+   "seconds": 6,
+   "visual": "Red, logo, live URL and Telegram handle, Built on Cala, Junction 2026.",
    "lines": [
     {
      "voice": "narrator",

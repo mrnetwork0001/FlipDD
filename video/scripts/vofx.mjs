@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(fileURLToPath(import.meta.url), "../..");
 export const VO_LUFS = -16;
 // FlipDD answering on the phone line: band-limited like a call.
-const BROADCAST = new Set(["go_2"]);
+const BROADCAST = new Set(["go_1"]);
 
 export function renderVo(id, tempo = 1) {
   const src = join(ROOT, ".cache/raw", `${id}.mp3`);

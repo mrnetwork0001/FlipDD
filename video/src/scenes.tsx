@@ -180,7 +180,7 @@ const Chip: React.FC<{ at: number; color: string; children: React.ReactNode; sty
   );
 };
 
-const URL = "localhost:3001/app";
+const URL = "tryflipdd.vercel.app/app";
 const W = 1360; // browser width on screen
 const BX = (1920 - W) / 2;
 
@@ -196,8 +196,8 @@ export const Open: React.FC = () => {
     <Fill bg={C.night} color={C.paper}>
       <AbsoluteFill style={{ background: "radial-gradient(1200px 700px at 70% 70%, rgba(214,60,34,0.16), transparent 70%)" }} />
       <div style={{ position: "absolute", left: 120, top: 112, right: 120, fontFamily: serif, fontSize: 96, lineHeight: 1.02, letterSpacing: "-0.01em" }}>
-        <Spoken id="open" range={[0, 8]} accent={{ "competitor.": C.signal }} />
-        <Spoken id="open" range={[8, 15]} accent={{ "pitch.": C.signal }} style={{ fontSize: 58, marginTop: 22, color: "rgba(244,241,232,0.78)" }} />
+        <Spoken id="open" range={[0, 7]} accent={{ "competitor.": C.signal }} />
+        <Spoken id="open" range={[7, 13]} accent={{ "blind": C.signal }} style={{ fontSize: 58, marginTop: 22, color: "rgba(244,241,232,0.78)" }} />
       </div>
       <div style={{ position: "absolute", inset: 0, transform: `translateX(${shake}px)` }}>
         {/* the meeting, there from frame 0 */}
@@ -231,36 +231,36 @@ export const Open: React.FC = () => {
 
 export const Problem: React.FC = () => {
   const { f, dur, rel } = useCue("problem");
-  const z = interpolate(f, [0, dur], [1.04, 1.13], clamp);
-  const deckAt = rel("walk");
-  const t = interpolate(f, [deckAt - 6, rel("rival.") + 6], [0, 1], { ...clamp, easing: soft });
+  const z = interpolate(f, [0, dur], [1.04, 1.12], clamp);
+  const item = (text: string, at: number, tone: "dark" | "red" = "dark") => (
+    <In at={at} y={12} style={{ marginTop: 12 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 12, padding: "12px 20px", borderRadius: 999, background: tone === "red" ? C.signal : "rgba(244,241,232,0.94)", color: tone === "red" ? "#fff" : C.ink, fontSize: 28, fontWeight: 600 }}>{text}</div>
+    </In>
+  );
   return (
     <Fill bg={C.night} color={C.paper}>
       <AbsoluteFill style={{ transform: `scale(${z})`, transformOrigin: "65% 60%" }}>
         <Img src={staticFile("brand/before-slush.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "60% 55%" }} />
       </AbsoluteFill>
-      <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(21,18,14,0.96) 0%, rgba(21,18,14,0.7) 38%, rgba(21,18,14,0) 70%)" }} />
-      <div style={{ position: "absolute", left: 120, top: 180, width: 860, fontFamily: serif, fontSize: 84, lineHeight: 1.05 }}>
-        <Spoken id="problem" range={[0, 7]} out={rel("Nobody") - 12} />
+      <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(21,18,14,0.97) 0%, rgba(21,18,14,0.75) 45%, rgba(21,18,14,0.15) 80%)" }} />
+      <div style={{ position: "absolute", left: 120, top: 150, width: 880, fontFamily: serif, fontSize: 82, lineHeight: 1.05 }}>
+        <Spoken id="problem" range={[0, 8]} accent={{ "numbers.": C.signal }} />
+        <Spoken id="problem" range={[8, 15]} style={{ marginTop: 26, fontSize: 64, color: "rgba(244,241,232,0.8)" }} accent={{ "name.": C.signal }} />
       </div>
-      <div style={{ position: "absolute", left: 120, top: 180, width: 860, fontFamily: serif, fontSize: 84, lineHeight: 1.05 }}>
-        <Spoken id="problem" range={[7, 13]} accent={{ "table.": C.signal }} out={rel("Your") - 12} />
+      <div style={{ position: "absolute", left: 120, top: 640, display: "flex", gap: 90 }}>
+        <div>
+          <In at={rel("They") - 2} y={8}><Kicker color="rgba(244,241,232,0.6)">The investor knows</Kicker></In>
+          {item("Your market", rel("market"))}
+          <br />
+          {item("Lovable's growth", rel("rival's"))}
+          <br />
+          {item("What to ask you", rel("numbers."))}
+        </div>
+        <div>
+          <In at={rel("Most") - 2} y={8}><Kicker color="rgba(244,241,232,0.6)">You know</Kicker></In>
+          {item("A name", rel("name.") - 4, "red")}
+        </div>
       </div>
-      <div style={{ position: "absolute", left: 120, top: 180, width: 860, fontFamily: serif, fontSize: 84, lineHeight: 1.05 }}>
-        <Spoken id="problem" range={[13, 21]} accent={{ "rival.": C.signal }} />
-      </div>
-      {/* the deck travels down the red line, out of the room */}
-      <LeakLine x1={1060} y1={760} x2={1760} y2={420} a={deckAt - 10} b={deckAt + 10} bead={false} />
-      <div style={{
-        position: "absolute", left: 1060 + 700 * t - 90, top: 760 - 340 * (t * t * (3 - 2 * t)) - 60, opacity: interpolate(f, [deckAt - 8, deckAt], [0, 1], clamp),
-        width: 180, height: 120, borderRadius: 14, background: C.card, color: C.ink, boxShadow: "0 24px 50px rgba(0,0,0,0.5)", padding: 16, transform: `rotate(${-8 + 10 * t}deg)`,
-      }}>
-        <div style={{ fontFamily: mono, fontSize: 13, letterSpacing: "0.12em", color: C.signal }}>PITCH DECK</div>
-        {[0, 1, 2].map((i) => <div key={i} style={{ height: 8, borderRadius: 4, background: C.line, marginTop: 12, width: `${90 - i * 18}%` }} />)}
-      </div>
-      <In at={rel("rival.") - 4} style={{ position: "absolute", left: 1690, top: 360 }}>
-        <div style={{ padding: "12px 20px", borderRadius: 999, background: C.signal, color: "#fff", fontFamily: mono, fontSize: 20, letterSpacing: "0.12em" }}>A RIVAL</div>
-      </In>
     </Fill>
   );
 };
@@ -286,7 +286,7 @@ export const Turn: React.FC = () => {
         <Spoken id="turn" range={[5, 9]} accent={{ "back,": "#fff" }} />
       </div>
       <div style={{ position: "absolute", left: 140, top: 700, fontFamily: sans, fontWeight: 600, fontSize: 52, color: "rgba(255,255,255,0.9)" }}>
-        <Spoken id="turn" range={[9, 14]} />
+        <Spoken id="turn" range={[9, 12]} />
       </div>
     </Fill>
   );
@@ -298,16 +298,16 @@ export const Check: React.FC = () => {
   const { rel } = useCue("check");
   const press = rel("FlipDD") - 4;
   const S = Math.max(0, markOf("check", "check.press") - press);
-  const ninety = rel("Ninety");
+  const hundred = rel("hundred");
   return (
     <Fill bg={C.paper}>
       <Browser name="check" url={URL} width={W} left={BX} top={48} light startFrom={S}
-        cams={[{ f: 0, z: 1 }, { f: ninety - 20, z: 1 }, { f: ninety + 10, rect: { x: 1150, y: 0, w: 450, h: 120 }, z: 1.0 }]} />
-      <Chip at={ninety} color={C.ink} style={{ left: 1290, top: 150 }}>
-        <span style={{ color: "#fff" }}>{run.stats.liveCalls}</span> LIVE CALA CALLS
+        cams={[{ f: 0, z: 1 }, { f: hundred - 20, z: 1 }, { f: hundred + 10, rect: { x: 1150, y: 0, w: 450, h: 120 }, z: 1.0 }]} />
+      <Chip at={hundred} color={C.ink} style={{ left: 1260, top: 150 }}>
+        {run.stats.records} CALA RECORDS
       </Chip>
-      <Chip at={rel("seconds.") - 4} color={C.signal} style={{ left: 1290, top: 222 }}>
-        {run.stats.seconds.toFixed(1)} S · CACHE OFF
+      <Chip at={rel("seconds.") - 4} color={C.signal} style={{ left: 1260, top: 222 }}>
+        {run.stats.seconds.toFixed(1)} SECONDS
       </Chip>
     </Fill>
   );
@@ -317,11 +317,10 @@ export const Check: React.FC = () => {
 
 export const Ties: React.FC = () => {
   const { rel } = useCue("ties");
-  const cutB = rel("One") - 6;
-  const cutC = rel("A", 1) - 6;
+  const cutB = rel("Northzone") - 14;
+  const cutC = rel("Others") - 8;
   const atB = rel("Northzone");
   const atC = rel("lookalike.");
-  const board = rel("And");
   const sB = markOf("ties", "ties.northzone") - atB + cutB;
   const sC = markOf("ties", "ties.atomico") - atC + cutC;
   const label = { position: "absolute" as const, left: BX - 20, top: 26 };
@@ -339,51 +338,49 @@ export const Ties: React.FC = () => {
         <Browser name="ties" url={URL} width={W} left={BX} top={48} light startFrom={sC} enter={-30}
           cams={[{ f: 0, z: 1 }, { f: atC - cutC + 8, rect: "atomico", z: 1.3, dy: 160 }]} />
       </Sequence>
-      <Chip at={rel("direct")} out={cutB - 4} color={C.signal} style={label}>DIRECT STAKE</Chip>
-      <Chip at={rel("One")} out={cutC - 4} color={C.caution} style={label}>ONE STEP AWAY · VIA {String(run.northzone.via).toUpperCase()}</Chip>
-      <Chip at={atC - 4} out={board - 4} color={C.muted} style={label}>LOOKALIKE IN THE PORTFOLIO</Chip>
-      {/* the fourth tie, explained on a card: people matched on the same person record */}
-      <Sequence from={board - 4} layout="none">
-        <div style={{ position: "absolute", left: 1080, top: 560, width: 640, padding: "30px 34px", borderRadius: 26, background: C.night, color: C.paper, boxShadow: "0 40px 90px rgba(0,0,0,0.35)", borderTop: `4px solid ${C.signal}` }}>
-          <Kicker color="rgba(244,241,232,0.6)">People</Kicker>
-          <div style={{ fontFamily: serif, fontSize: 52, lineHeight: 1.05, marginTop: 12 }}>A partner on a rival&apos;s board</div>
-          <div style={{ fontSize: 24, lineHeight: 1.4, marginTop: 12, color: "rgba(244,241,232,0.7)" }}>Matched on the same person record in Cala, not just the same name.</div>
-        </div>
+      <Chip at={rel("Creandum") - 2} out={cutB - 4} color={C.signal} style={label}>BACKS YOUR COMPETITOR</Chip>
+      <Chip at={atB - 2} out={cutC - 4} color={C.caution} style={label}>ONE STEP AWAY · VIA {String(run.northzone.via).toUpperCase()}</Chip>
+      <Chip at={rel("Others") - 2} color={C.muted} style={label}>LOOKALIKE IN THE PORTFOLIO</Chip>
+    </Fill>
+  );
+};
+
+// ---------------------------------------------------------------- 6. prep (real footage, four cuts)
+
+export const Prep: React.FC = () => {
+  const { rel } = useCue("prep");
+  const open = rel("Prep.");
+  const tWho = rel("Who's");
+  const tTeam = rel("and", 0) - 4;
+  // "what" also occurs in "and what they did before": the sentences start at the 2nd and 3rd.
+  const tKnow = rel("What", 1) - 6;
+  const tAsk = rel("What", 2) - 6;
+  const S1 = Math.max(0, markOf("prep", "prep.open") - open);
+  // Inside a cut, the clip starts at startFrom: show the moment just after each click.
+  const S2 = markOf("prep", "prep.team") + 30;
+  const S3 = markOf("prep", "prep.rival") + 40;
+  const S4 = markOf("prep", "prep.summary") + 30;
+  const dialog = { x: 880, y: 0, w: 720, h: 900 };
+  const label = { position: "absolute" as const, left: BX - 20, top: 26 };
+  const cams = [{ f: 0, z: 1 }, { f: open + 14, rect: dialog, z: 1.25 }];
+  return (
+    <Fill bg={C.paper}>
+      <Sequence from={0} durationInFrames={tTeam + 8} layout="none">
+        <Browser name="prep" url={URL} width={W} left={BX} top={48} light startFrom={S1} cams={cams} />
       </Sequence>
-    </Fill>
-  );
-};
-
-// ---------------------------------------------------------------- 6. round (real footage)
-
-export const Round: React.FC = () => {
-  const { rel } = useCue("round");
-  const four = rel("Four");
-  const S = Math.max(0, markOf("round", "round.panel") - four);
-  return (
-    <Fill bg={C.paper}>
-      <Browser name="round" url={URL} width={W} left={BX} top={48} light startFrom={S}
-        cams={[{ f: 0, z: 1 }, { f: four + 4, rect: "headline", z: 1.45, dx: 230 }, { f: rel("safest") - 4, rect: "headline", z: 1.45, dx: 230 }, { f: rel("safest") + 18, z: 1.1, dy: 120 }]} />
-      <Chip at={four + 2} out={rel("Meet") - 6} color={C.signal} style={{ left: BX - 20, top: 26 }}>
-        {run.investors.filter((r) => r.level !== "possible" && r.level !== "clear").length} OF {run.investors.length} MEETINGS · ONE STEP FROM LOVABLE
-      </Chip>
-      <Chip at={rel("Meet")} color={C.clear} style={{ left: BX - 20, top: 26 }}>SAFEST FIRST</Chip>
-    </Fill>
-  );
-};
-
-// ---------------------------------------------------------------- 7. find (real footage)
-
-export const Find: React.FC = () => {
-  const { rel } = useCue("find");
-  const S = Math.max(0, markOf("find", "find.tab") - rel("clean"));
-  return (
-    <Fill bg={C.paper}>
-      <Browser name="find" url={URL} width={W} left={BX} top={48} light startFrom={S}
-        cams={[{ f: 0, z: 1 }, { f: rel("Six"), z: 1.15, dx: 200, dy: -60 }]} />
-      <Chip at={rel("Six") - 2} color={C.clear} style={{ left: BX - 20, top: 26 }}>
-        {run.finder.clean} CLEAN · {run.finder.considered} CONSIDERED · {run.finder.dropped} DROPPED
-      </Chip>
+      <Sequence from={tTeam} durationInFrames={tKnow - tTeam + 8} layout="none">
+        <Browser name="prep" url={URL} width={W} left={BX} top={48} light startFrom={S2} enter={-30} cams={[{ f: 0, rect: dialog, z: 1.25 }]} />
+      </Sequence>
+      <Sequence from={tKnow} durationInFrames={tAsk - tKnow + 8} layout="none">
+        <Browser name="prep" url={URL} width={W} left={BX} top={48} light startFrom={S3} enter={-30} cams={[{ f: 0, rect: dialog, z: 1.25 }]} />
+      </Sequence>
+      <Sequence from={tAsk} layout="none">
+        <Browser name="prep" url={URL} width={W} left={BX} top={48} light startFrom={S4} enter={-30} cams={[{ f: 0, rect: dialog, z: 1.25 }]} stopAt={S4 + 40} />
+      </Sequence>
+      <Chip at={open} out={tWho - 4} color={C.ink} style={label}>MEETING PREP · CREANDUM</Chip>
+      <Chip at={tWho} out={tKnow - 4} color={C.ink} style={label}>LIKELY ACROSS THE TABLE · {run.prep.lead.toUpperCase()}</Chip>
+      <Chip at={tKnow} out={tAsk - 4} color={C.signal} style={label}>WHAT THEY KNOW · LOVABLE ARR $17M → $75M</Chip>
+      <Chip at={tAsk} color={C.clear} style={label}>WHAT TO ASK · WHAT TO HOLD BACK</Chip>
     </Fill>
   );
 };
@@ -391,37 +388,33 @@ export const Find: React.FC = () => {
 // ---------------------------------------------------------------- 8. go: phone, Telegram, Play my day
 
 export const Go: React.FC = () => {
-  const { f, s } = useCue("go");
+  const { f, s, rel } = useCue("go");
   const L = (i: number) => s.lines[i].startFrame - s.from;
-  const tg = L(3);
-  const playAt = wordAt("go", "Play") - s.from;
-  const markP = interpolate(f, [L(1) - 20, L(1)], [0, 1], { ...clamp, easing: soft });
+  const callAt = rel("call.") - 16;
   return (
     <Fill bg={C.paper}>
-      {/* the call mark, centre stage, then off to the side */}
-      <div style={{ position: "absolute", left: interpolate(markP, [0, 1], [760, 120]), top: interpolate(markP, [0, 1], [250, 110]), transform: `scale(${1 - 0.45 * markP})`, transformOrigin: "0 0", opacity: interpolate(f, [tg - 12, tg], [1, 0], clamp) }}>
-        <CallMark size={400} />
+      <div style={{ position: "absolute", left: 120, top: 120, width: 760, fontFamily: serif, fontSize: 76, lineHeight: 1.05, opacity: interpolate(f, [callAt - 10, callAt], [1, 0], clamp) }}>
+        <Spoken id="go" line={0} range={[0, 6]} accent={{ "phone.": C.signal }} />
       </div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 720, textAlign: "center", fontFamily: serif, fontSize: 96, opacity: 1 - markP }}>
-        <Spoken id="go" line={0} accent={{ "call.": C.signal }} />
-      </div>
-      {/* the real call: the team's own screen recording goes in the phone */}
-      <Phone left={1360} top={110} at={L(1) - 14} out={tg - 10}>
-        <Placeholder label="A real call to the FlipDD line" sub="Screen recording of your phone during the call" style={{ inset: 0, borderRadius: 50, border: "none" }} />
+      {/* Telegram: the owner's real screen recording goes in the phone */}
+      <Phone left={1300} top={110} at={rel("Telegram") - 10} out={callAt - 8}>
+        <Placeholder label="Telegram: /prep Creandum, the note and its voice reply" sub="Screen recording of your phone" style={{ inset: 0, borderRadius: 50, border: "none" }} />
       </Phone>
-      <div style={{ position: "absolute", left: 140, top: 380, width: 1120, display: "flex", flexDirection: "column", gap: 22, opacity: interpolate(f, [tg - 10, tg], [1, 0], clamp) }}>
-        <Bubble at={L(1) - 2} who="YOU" self>I&apos;m meeting Creandum and Northzone. My competitor is Lovable.</Bubble>
-        <Bubble at={L(2) - 2} who="FLIPDD">
-          <b>Creandum:</b> direct conflict. Backed Lovable, February 2025. <span style={{ color: C.signal, fontWeight: 600 }}>Teaser only.</span>
+      <div style={{ position: "absolute", left: 120, top: 470, width: 1080, display: "flex", flexDirection: "column", gap: 20, opacity: interpolate(f, [callAt - 10, callAt], [1, 0], clamp) }}>
+        <Bubble at={rel("Telegram") - 4} who="YOU, IN TELEGRAM" self><span style={{ fontFamily: mono }}>/prep Creandum</span></Bubble>
+        <Bubble at={L(1) - 4} who="FLIPDD · VOICE NOTE">
+          <b>Creandum.</b> Expect the comparison. Likely across the table: <b>Sabina Wizander</b>, Partner.
         </Bubble>
       </div>
-      {/* Telegram, then Play my day */}
-      <Phone left={260} top={110} at={tg + 4}>
-        <Placeholder label="A Telegram voice note, and the bot's voice reply" sub="Screen recording of your phone" style={{ inset: 0, borderRadius: 50, border: "none" }} />
-      </Phone>
-      <Sequence from={playAt - 30} layout="none">
-        <Browser name="play" url={URL} width={1080} left={760} top={170} light startFrom={Math.max(0, markOf("play", "play.press") - 30)}
-          cams={[{ f: 0, rect: "button", z: 1.6, dx: -260, dy: 60 }]} />
+      {/* the phone line */}
+      <Sequence from={callAt} layout="none">
+        <div style={{ position: "absolute", left: 300, top: 290 }}><CallMark size={360} /></div>
+        <Phone left={1220} top={110} at={4}>
+          <Placeholder label="A real call to the FlipDD line" sub="Screen recording of your phone during the call" style={{ inset: 0, borderRadius: 50, border: "none" }} />
+        </Phone>
+        <div style={{ position: "absolute", left: 260, top: 720, fontFamily: serif, fontSize: 88 }}>
+          <Spoken id="go" line={2} accent={{ "call.": C.signal }} />
+        </div>
       </Sequence>
     </Fill>
   );
@@ -431,7 +424,7 @@ export const Go: React.FC = () => {
 
 export const Real: React.FC = () => {
   const { rel } = useCue("real");
-  const hosts = run.creandum.sources.map((u) => new globalThis.URL(u).hostname.replace(/^www\./, ""));
+  const hosts = [...new Set(run.creandum.sources.map((u) => new globalThis.URL(u).hostname.replace(/^www\./, "")))];
   return (
     <Fill bg={C.night} color={C.paper}>
       <In at={0} y={0} style={{ position: "absolute", left: 140, top: 150 }}>
@@ -442,7 +435,7 @@ export const Real: React.FC = () => {
       </div>
       <div style={{ position: "absolute", left: 140, top: 640, display: "flex", gap: 18, flexWrap: "wrap", width: 1600 }}>
         <In at={rel("with") - 6} y={14}>
-          <div style={{ padding: "14px 22px", borderRadius: 999, background: C.signal, color: "#fff", fontFamily: mono, fontSize: 22 }}>CREANDUM → LOVABLE · FEB 2025</div>
+          <div style={{ padding: "14px 22px", borderRadius: 999, background: C.signal, color: "#fff", fontFamily: mono, fontSize: 22 }}>CREANDUM → {run.creandum.headline.toUpperCase()}</div>
         </In>
         {hosts.map((h, i) => (
           <In key={h} at={rel("its") + i * 5} y={14}>
@@ -470,7 +463,8 @@ export const Close: React.FC = () => {
         <Spoken id="close" range={[1, 7]} accent={{ "table.": "#fff" }} />
       </div>
       <In at={rel("table.") + 4} y={10} style={{ position: "absolute", left: 0, right: 0, top: 720, display: "flex", justifyContent: "center", gap: 26, alignItems: "center", fontFamily: mono, fontSize: 26, letterSpacing: "0.08em" }}>
-        <span style={{ padding: "12px 22px", borderRadius: 12, border: "2px dashed rgba(255,255,255,0.7)" }}>[ LIVE URL ]</span>
+        <span style={{ padding: "12px 22px", borderRadius: 12, background: "rgba(255,255,255,0.14)" }}>tryflipdd.vercel.app</span>
+        <span style={{ opacity: 0.9 }}>@tryflipdd_bot</span>
         <span style={{ opacity: 0.8 }}>BUILT ON</span>
         <Img src={staticFile("brand/cala-logo.png")} style={{ height: 40, filter: "brightness(0) invert(1)" }} />
         <span style={{ opacity: 0.8 }}>· JUNCTION 2026</span>

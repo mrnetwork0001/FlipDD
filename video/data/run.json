@@ -1,6 +1,6 @@
 {
- "source": "FlipDD run 5uo8jj39ktpx, recorded for the film from http://localhost:3001/app with 'Ask Cala live' ticked",
- "createdAt": "2026-11-14T14:04:33.905Z",
+ "source": "FlipDD run tyh8bre94523 on https://tryflipdd.vercel.app/app, recorded for the film (built-in example; Cala records fetched live today and cached)",
+ "createdAt": "2026-11-14T18:21:59.539Z",
  "startup": "Veloce AI",
  "competitors": [
   "Lovable"
@@ -9,7 +9,7 @@
   {
    "name": "Creandum",
    "level": "direct_high",
-   "headline": "Backed Lovable, Feb 2025",
+   "headline": "Led Lovable's Series B, Dec 2025",
    "share": "Teaser only"
   },
   {
@@ -56,45 +56,44 @@
   }
  ],
  "stats": {
-  "liveCalls": 90,
-  "cached": 0,
-  "seconds": 8.0
+  "liveCalls": 7,
+  "cached": 103,
+  "records": 110,
+  "seconds": 5.6
  },
  "creandum": {
-  "headline": "Backed Lovable, Feb 2025",
-  "ask": "Given that Creandum backed Lovable in February 2025, how do you handle potential conflicts of interest and manage sensitive information regarding our web app code-generation platform?",
+  "headline": "Led Lovable's Series B, Dec 2025",
+  "ask": "Given that Creandum led Lovable's $425M Series B round in Dec 2025, how do you handle potential conflicts and keep shared materials separate from that team?",
   "sources": [
-   "https://news.crunchbase.com/ai/vibe-coding-startup-lovable-unicorn-status",
-   "https://techcrunch.com/2025/02/25/swedens-lovable-an-app-building-ai-platform-rakes-in-16m-after-spectacular-growth",
-   "https://pitchbook.com/profiles/company/600908-32"
+   "https://lovable.dev/blog/series-b",
+   "https://lovable.dev/blog/200m-series-a-fundraise",
+   "https://lovable.dev/blog/fundraise-series-a-announcement",
+   "https://techcrunch.com/2025/07/17/lovable-becomes-a-unicorn-with-200m-series-a-just-8-months-after-launch/"
   ]
  },
  "northzone": {
   "headline": "Co-invests with Accel, which led Lovable",
   "via": "Accel",
   "strength": 61,
-  "sharedRounds": 3,
-  "sources": [
-   "https://lovable.dev/blog/series-b",
-   "https://lovable.dev/blog/200m-series-a-fundraise",
-   "https://techcrunch.com/2025/07/17/lovable-becomes-a-unicorn-with-200m-series-a-just-8-months-after-launch/",
-   "https://techcrunch.com/2025/02/25/swedens-lovable-an-app-building-ai-platform-rakes-in-16m-after-spectacular-growth/"
-  ]
+  "sharedRounds": 3
  },
  "finder": {
-  "considered": 58,
+  "considered": 87,
   "clean": 6,
-  "dropped": 8,
-  "names": [
-   "Bpifrance S.A.",
-   "Greylock Partners",
-   "MOTIER",
-   "FirstMark Capital, L.L.C.",
-   "EURAZEO",
-   "Eric Schmidt"
-  ]
+  "dropped": 8
  },
- "slush": {
-  "attendees": 2988
+ "prep": {
+  "lead": "Sabina Wizander",
+  "leadRole": "Partner",
+  "leadPast": "Chief Commercial Officer at Kry International AB (2017-2021)",
+  "arr": [
+   "$17M Feb 2025 (lovable.dev)",
+   "$75M Jul 2025 (techcrunch.com)"
+  ],
+  "people": [
+   15,
+   45,
+   146
+  ]
  }
 }

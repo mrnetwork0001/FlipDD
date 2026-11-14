@@ -5,9 +5,9 @@ import { C } from "./theme";
 import { Captions } from "./ui/Captions";
 import { Grain } from "./ui/Grain";
 import { clamp } from "./ui/motion";
-import { Check, Close, Find, Go, Open, Problem, Real, Round, Ties, Turn } from "./scenes";
+import { Check, Close, Go, Open, Prep, Problem, Real, Ties, Turn } from "./scenes";
 
-const SCENES: Record<string, React.FC> = { open: Open, problem: Problem, turn: Turn, check: Check, ties: Ties, round: Round, find: Find, go: Go, real: Real, close: Close };
+const SCENES: Record<string, React.FC> = { open: Open, problem: Problem, turn: Turn, check: Check, ties: Ties, prep: Prep, go: Go, real: Real, close: Close };
 const OVERLAP = 10; // frames each scene starts early, to dissolve over the last
 
 /** Each scene eases in (a short rise, un-blur and settle) over the tail of the previous one, holding its first frame. */
@@ -48,34 +48,34 @@ function effects(): Fx[] {
     { file: "snap", at: w("open", "already") - 2, vol: 0.6 },
     { file: "thud", at: w("open", "competitor.") - 1, vol: 0.75 },
     { file: "whoosh", at: sc("problem") - 8, vol: 0.3 },
-    { file: "paper", at: w("problem", "walk") - 6, vol: 0.5 },
+    ...["market", "rival's", "numbers."].map((x) => ({ file: "pop", at: w("problem", x) - 2, vol: 0.32 })),
+    { file: "alert", at: w("problem", "name.") - 4, vol: 0.3 },
     { file: "riser", at: sc("turn") - 54, vol: 0.35 },
     { file: "flip", at: sc("turn") + 1, vol: 0.55 },
     { file: "impact", at: sc("turn") + 4, vol: 0.55 },
     { file: "whoosh", at: sc("check") - 8, vol: 0.3 },
     { file: "click", at: w("check", "FlipDD") - 4, vol: 0.5 },
-    { file: "tick", at: w("check", "Ninety") - 2, vol: 0.35 },
+    { file: "tick", at: w("check", "hundred") - 2, vol: 0.35 },
     { file: "pop", at: w("check", "seconds.") - 4, vol: 0.4 },
     { file: "whoosh", at: sc("ties") - 8, vol: 0.3 },
-    { file: "alert", at: w("ties", "direct") - 2, vol: 0.35 },
-    { file: "pop", at: w("ties", "One") - 2, vol: 0.4 },
-    { file: "pop", at: w("ties", "lookalike.") - 6, vol: 0.4 },
-    { file: "pop", at: w("ties", "And") - 4, vol: 0.4 },
-    { file: "whoosh", at: sc("round") - 8, vol: 0.3 },
-    { file: "tick", at: w("round", "Four") - 2, vol: 0.3 },
-    { file: "chime", at: w("round", "safest") - 2, vol: 0.3 },
-    { file: "whoosh", at: sc("find") - 8, vol: 0.3 },
-    { file: "chime", at: w("find", "Six") - 2, vol: 0.35 },
-    { file: "ring", at: sc("go") + 2, vol: 0.45, dur: 60 },
-    { file: "pickup", at: lineStart("go", 1) - 8, vol: 0.5 },
-    { file: "pop", at: lineStart("go", 2) - 4, vol: 0.4 },
-    { file: "pop", at: lineStart("go", 3) + 4, vol: 0.4 },
-    { file: "click", at: w("go", "Play") - 4, vol: 0.45 },
+    { file: "alert", at: w("ties", "Creandum") - 2, vol: 0.35 },
+    { file: "pop", at: w("ties", "Northzone") - 2, vol: 0.4 },
+    { file: "pop", at: w("ties", "Others") - 2, vol: 0.4 },
+    { file: "whoosh", at: sc("prep") - 8, vol: 0.3 },
+    { file: "click", at: w("prep", "Prep.") - 4, vol: 0.5 },
+    { file: "pop", at: w("prep", "Who's") - 2, vol: 0.35 },
+    { file: "chime", at: w("prep", "seventeen") - 2, vol: 0.3 },
+    { file: "pop", at: w("prep", "What", 2) - 2, vol: 0.35 },
+    { file: "whoosh", at: sc("go") - 8, vol: 0.3 },
+    { file: "pop", at: w("go", "Telegram") - 4, vol: 0.4 },
+    { file: "chime", at: lineStart("go", 1) - 6, vol: 0.35 },
+    { file: "ring", at: w("go", "call.") - 18, vol: 0.45, dur: 60 },
     { file: "whoosh", at: sc("real") - 8, vol: 0.3 },
     { file: "pop", at: w("real", "its") - 2, vol: 0.35 },
     { file: "flip", at: sc("close") + 1, vol: 0.5 },
     { file: "impact", at: sc("close") + 4, vol: 0.45 },
   ];
+
   void go;
   return fx.filter((x) => x.at >= 0 && x.at < T.totalFrames);
 }
@@ -84,7 +84,7 @@ export const Film: React.FC = () => {
   // Captions sit out where big type already carries the words.
   const hideCaptions = (f: number) => {
     const s = T.scenes.find((x) => f >= x.from && f < x.from + x.durationInFrames);
-    return !s || ["open", "problem", "turn", "real", "close"].includes(s.id) || (s.id === "go" && f < lineStart("go", 1));
+    return !s || ["open", "problem", "turn", "real", "close"].includes(s.id) || (s.id === "go" && f < wordAt("go", "Telegram"));
   };
   return (
     <AbsoluteFill style={{ background: C.night }}>

@@ -27,7 +27,7 @@ const OVERRIDES = {
   open_0: { stability: 0.32, style: 0.6, speed: 1.1 },
   turn_0: { stability: 0.4, style: 0.55, speed: 1.04 },
   // FlipDD on the phone: even and clear.
-  go_2: { stability: 0.7, style: 0.1, speed: 1.1 },
+  go_1: { stability: 0.7, style: 0.1, speed: 1.1 },
   close_0: { stability: 0.45, style: 0.5, speed: 1.0 },
 };
 

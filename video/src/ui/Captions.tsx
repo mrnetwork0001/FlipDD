@@ -23,7 +23,7 @@ export const Captions: React.FC<{ hidden?: (frame: number) => boolean; bottom?: 
   for (const c of chunks) if (frame >= c[0].start - 3) shown = c;
   const lastEnd = line.words[line.words.length - 1].end;
   const op = interpolate(frame, [line.startFrame - 4, line.startFrame + 4, lastEnd + 6, lastEnd + 14], [0, 1, 1, 0], clamp);
-  const tag = line.voice === "caller" ? "FOUNDER" : line.voice === "flipdd" ? "FLIPDD, ON THE CALL" : null;
+  const tag = line.voice === "caller" ? "FOUNDER" : line.voice === "flipdd" ? "FLIPDD · VOICE NOTE" : null;
   return (
     <div style={{ position: "absolute", left: 0, right: 0, bottom, display: "flex", justifyContent: "center", opacity: op, pointerEvents: "none" }}>
       <div style={{

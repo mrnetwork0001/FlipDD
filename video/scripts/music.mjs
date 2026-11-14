@@ -16,12 +16,12 @@ const seconds = Math.ceil(timing.totalFrames / 30 + 2);
 
 const PROMPT =
   "Modern, energetic product film score for a startup tool, about 112 BPM, confident and premium, Afro-electronic flavour, no vocals. " +
-  "0-6s: tense and close, a low sub pulse like a heartbeat, a ticking hi-hat, a single dark synth stab, suspense like a spy film. " +
-  "6-14s: tension builds, muted plucks, a filtered shaker, a rising airy riser in the last two seconds. " +
-  "At 14.5s: one clean bright hit, then release. 14.5-21s: a short confident build with claps and a warm bass. " +
-  "21-63s: a driving, positive Afro-electronic groove, crisp percussion, log-drum bass, bright marimba and guitar plucks, steady and smart, building in layers. " +
-  "63-79s: the arrangement lifts and opens, more energy, a sense of freedom and movement. " +
-  "79-84s: pulls back slightly, warm pads. 84-90s: resolves on a strong final chord and one clean final hit, short tail. No vocals, no lyrics.";
+  "0-8s: tense and close, a low sub pulse like a heartbeat, a ticking hi-hat, one dark synth stab. " +
+  "8-16s: tension builds, muted plucks, a filtered shaker, a rising airy riser in the last two seconds. " +
+  "At 16.3s: one clean bright hit, then release. 16-23s: a short confident build with claps and a warm bass. " +
+  "23-61s: a driving, positive Afro-electronic groove, crisp percussion, log-drum bass, bright marimba and guitar plucks, steady and smart, building in layers. " +
+  "61-77s: the arrangement lifts and opens, more energy, a sense of movement. " +
+  "77-82s: pulls back slightly, warm pads. 82-88s: resolves on a strong final chord and one clean final hit, short tail. No vocals, no lyrics.";
 
 const ff = (a) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...a]);
 const dur = (f) => parseFloat(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", f]).toString());

@@ -12,14 +12,14 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join, resolve } from "node:path";
 import { launch, sleep } from "./cdp.mjs";
 
-const BASE = process.env.BASE || "http://localhost:3001";
+const BASE = process.env.BASE || "https://tryflipdd.vercel.app";
 const ROOT = resolve(new URL("..", import.meta.url).pathname);
 const FRAMES = join(ROOT, ".cache/frames");
 const STILLS = join(ROOT, "public/stills");
 const SCALE = 2;
 const VIEW = { w: 1600, h: 900 };
 const ONLY = process.env.ONLY?.split(",");
-if (!ONLY) { console.error("Set ONLY=<clip,...> (check,ties,round,find,play). check runs a live Cala check."); process.exit(1); }
+if (!ONLY) { console.error("Set ONLY=<clip,...> (check,ties,prep,round,find,play). check runs a live Cala check."); process.exit(1); }
 const want = (clip) => ONLY.includes(clip);
 mkdirSync(FRAMES, { recursive: true });
 mkdirSync(STILLS, { recursive: true });
@@ -148,8 +148,7 @@ CLIPS.check = async () => {
   await sleep(1200);
   await press(byText("button", "Load example"), 1400);
   mark("check.load");
-  const live = `(${byText("label", "Ask Cala live")})?.querySelector('input') || document.querySelector('input[type=checkbox]')`;
-  if (!(await js(`!!(${live})?.checked`))) await press(live, 900);
+  // The example is answered from Cala records cached today (the live key is rate-limited); the header shows it.
   await press(byText("button", "Check 8 investors"), 300);
   mark("check.press");
   await cursorHide();
@@ -252,6 +251,50 @@ CLIPS.find = async () => {
   await endRec("find");
 };
 
+/** Meeting prep on Creandum: the 30-second card, who you'll meet, what they know about Lovable. */
+CLIPS.prep = async () => {
+  await ensureRun();
+  await press(tab("Investors"), 300);
+  await js(`document.querySelectorAll('li[id^=row-] button[aria-expanded=true]').forEach((b) => b.click())`);
+  const y = await docY(row("Creandum"));
+  await cursorHide();
+  await scrollTo(Math.max(0, y - 160), 10);
+  await sleep(500);
+  await rec("prep");
+  await sleep(900);
+  const prepBtn = `[...(${row("Creandum")}).querySelectorAll('button')].find((b) => b.textContent.trim() === 'Prep')`;
+  await press(prepBtn, 200);
+  mark("prep.open");
+  await waitFor(`/in 30 seconds/i.test(document.querySelector('[role=dialog]')?.innerText || '')`, 30000, "the prep note");
+  mark("prep.summary");
+  setMeta("prep", { url: URL_LABEL, rects: {
+    dialog: await rectOf(`document.querySelector('[role=dialog] aside') || document.querySelector('[role=dialog]')`),
+    summary: await rectOf(`[...document.querySelectorAll('[role=dialog] div')].find((d) => d.firstElementChild?.textContent?.trim() === 'In 30 seconds')`),
+  } });
+  await sleep(3800);
+  const fold = (title) => `[...document.querySelectorAll('[role=dialog] section button[aria-expanded]')].find((b) => b.textContent.includes(${JSON.stringify(title)}))`;
+  await press(fold("Who you'll meet"), 300);
+  mark("prep.team");
+  await sleep(600);
+  await js(`(${fold("Who you'll meet")}).scrollIntoView({ block: 'start', behavior: 'smooth' })`);
+  await sleep(900);
+  setMeta("prep", { rects: { team: await rectOf(`(${fold("Who you'll meet")}).closest('section')`) } });
+  await sleep(2600);
+  await press(fold("What they know about your competitors"), 300);
+  mark("prep.rival");
+  await sleep(600);
+  await js(`(${fold("What they know about your competitors")}).scrollIntoView({ block: 'start', behavior: 'smooth' })`);
+  await sleep(900);
+  setMeta("prep", { rects: { rival: await rectOf(`(${fold("What they know about your competitors")}).closest('section')`) } });
+  await sleep(4200);
+  await endRec("prep");
+  await still("prep_rival");
+  // the run behind the footage, for data/run.json
+  const runId = await js(`(JSON.parse(localStorage.getItem('flipdd.history.v1') || '[]')[0] || {}).id || ''`);
+  setMeta("prep", { runId });
+  log("run id:", runId);
+};
+
 /** Play my day: the button under the round score switches to Stop while it speaks. */
 CLIPS.play = async () => {
   await ensureRun();
@@ -274,7 +317,7 @@ CLIPS.play = async () => {
 b = await launch({ width: VIEW.w, height: VIEW.h });
 await b.send("Emulation.setDeviceMetricsOverride", { width: VIEW.w, height: VIEW.h, deviceScaleFactor: SCALE, mobile: false });
 try {
-  for (const name of ["check", "ties", "round", "find", "play"]) {
+  for (const name of ["check", "ties", "prep", "round", "find", "play"]) {
     if (!want(name)) continue;
     log("clip", name);
     await CLIPS[name]();

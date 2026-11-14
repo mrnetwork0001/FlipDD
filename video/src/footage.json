@@ -3,24 +3,24 @@
   "file": "footage/check.mp4",
   "width": 1600,
   "height": 900,
-  "durationFrames": 540,
+  "durationFrames": 419,
   "marks": {
    "check.load": 111,
-   "check.press": 214,
-   "check.done": 455
+   "check.press": 154,
+   "check.done": 335
   },
   "deviceScale": 2,
   "viewport": {
    "w": 1600,
    "h": 900
   },
-  "url": "localhost:3001/app",
+  "url": "tryflipdd.vercel.app/app",
   "rects": {
    "form": {
     "x": 12,
     "y": 89,
     "w": 380,
-    "h": 931
+    "h": 960
    },
    "header": {
     "x": 0,
@@ -30,7 +30,7 @@
    },
    "scan": null
   },
-  "header": "Gemini review\n90\nlive\ncache off\n8.0  \npowered by"
+  "header": "Gemini review\n7\nlive\n103\ncached\n· 2 h ago\n5.6  \npowered by"
  },
  "find": {
   "file": "footage/find.mp4",
@@ -128,7 +128,7 @@
   "file": "footage/ties.mp4",
   "width": 1600,
   "height": 900,
-  "durationFrames": 546,
+  "durationFrames": 545,
   "marks": {
    "ties.creandum": 109,
    "ties.northzone": 278,
@@ -143,21 +143,66 @@
    "creandum": {
     "x": 424,
     "y": 110,
-    "w": 1164,
-    "h": 1114
+    "w": 1096,
+    "h": 1192
    },
    "northzone": {
     "x": 424,
-    "y": 110,
-    "w": 1164,
-    "h": 705
+    "y": 158,
+    "w": 1096,
+    "h": 615
    },
    "atomico": {
     "x": 424,
-    "y": 258,
-    "w": 1164,
-    "h": 659
+    "y": 346,
+    "w": 1096,
+    "h": 719
    }
   }
+ },
+ "prep": {
+  "file": "footage/prep.mp4",
+  "width": 1600,
+  "height": 900,
+  "durationFrames": 605,
+  "marks": {
+   "prep.open": 66,
+   "prep.summary": 78,
+   "prep.team": 235,
+   "prep.rival": 411
+  },
+  "deviceScale": 2,
+  "viewport": {
+   "w": 1600,
+   "h": 900
+  },
+  "url": "tryflipdd.vercel.app/app",
+  "rects": {
+   "dialog": {
+    "x": 880,
+    "y": 20,
+    "w": 720,
+    "h": 880
+   },
+   "summary": {
+    "x": 908,
+    "y": 161,
+    "w": 664,
+    "h": 243
+   },
+   "team": {
+    "x": 908,
+    "y": 123,
+    "w": 664,
+    "h": 546
+   },
+   "rival": {
+    "x": 908,
+    "y": 123,
+    "w": 664,
+    "h": 323
+   }
+  },
+  "runId": "tyh8bre94523"
  }
 }

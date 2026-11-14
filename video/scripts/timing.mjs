@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(fileURLToPath(import.meta.url), "../..");
 const FPS = 30, MAX = 2700; // 1:30 ceiling
 const END_HOLD = { close: 60, turn: 20, open: 10 }; // min frames after last word, per scene
-const TRIM_ORDER = ["find", "real", "round", "ties", "check", "go", "problem", "turn"];
+const TRIM_ORDER = ["real", "ties", "check", "go", "prep", "problem", "turn"];
 // Words the voice is given phonetically (script.json `say`) are shown as written.
 const show = (w) => w.replace(/flip-d-d/i, "FlipDD").replace(/kahla/i, "Cala");
 const script = JSON.parse(readFileSync(join(ROOT, "script.json"), "utf8"));
