@@ -23,7 +23,7 @@ const creandum = {
 test("a briefing says who, the verdict, what to share and what to ask", () => {
   const s = spokenBriefing(creandum, { index: 1, total: 8 });
   assert.match(s, /^Meeting 1 of 8: Creandum\./);
-  assert.match(s, /Direct conflict\. Backed Lovable, February 2025\./);
+  assert.match(s, /Backs your competitor\. Backed Lovable, February 2025\./);
   assert.match(s, /Share a teaser only\./);
   assert.match(s, /Ask them: Who at the fund works with Lovable/);
 });

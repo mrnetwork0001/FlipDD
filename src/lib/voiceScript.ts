@@ -5,14 +5,15 @@
 
 import type { InvestorResult, Level, RoundRisk } from "./types";
 
+// The same words as the app's labels (LEVEL_LABEL): describe the tie, don't alarm.
 const SPOKEN_LEVEL: Record<Level, string> = {
-  direct_high: "Direct conflict",
-  direct_moderate: "Weaker conflict",
-  indirect: "Indirect link",
-  possible: "Possible overlap",
+  direct_high: "Backs your competitor",
+  direct_moderate: "Smaller stake in a competitor",
+  indirect: "One step away",
+  possible: "Lookalike in their portfolio",
   thin: "Too little data",
   unresolved: "Not found in Cala",
-  clear: "No conflict found",
+  clear: "No tie found",
 };
 
 const MONTHS: Record<string, string> = {

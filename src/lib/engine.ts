@@ -344,6 +344,12 @@ export const INVESTOR_QUERY = {
   },
 };
 
+/** Words that mark a record as a fund vehicle of a firm, not a different company. */
+const VEHICLE_WORDS = new Set([
+  "investment", "investments", "management", "managers", "gp", "lp", "l", "p", "fund", "funds", "founder", "founders",
+  "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "llp", "ltd", "limited", "llc", "sarl", "scsp", "ab", "oy", "as", "partnership",
+]);
+
 // ---------- similarity for the portfolio scan ----------
 
 const STOP = new Set(
@@ -549,17 +555,26 @@ export async function analyze(
     const all = await cala.search(name, 0, INVESTOR_SEARCH_LIMIT);
     const orgs = all.filter((c) => /company|organization|group|institution/i.test(c.entity_type));
     const key = exactKey(name);
+    // "Seedcamp Limited" is Seedcamp: legal suffixes don't make a different firm.
+    const core = coreKey(name);
     // Funds are usually "Organization" records; registry companies that share the name are "Company".
     const typeRank = (c: CalaEntity) => (/organization/i.test(c.entity_type) ? 0 : 1);
-    const exact = orgs.filter((c) => exactKey(c.name) === key).sort((a, b) => typeRank(a) - typeRank(b));
+    const exact = orgs.filter((c) => exactKey(c.name) === key || coreKey(c.name) === core).sort((a, b) => typeRank(a) - typeRank(b));
     const nameTokens = tokens(name);
     const prefixed = orgs.filter((c) => {
       const t = tokens(c.name);
-      return exactKey(c.name) !== key && nameTokens.every((x, i) => t[i] === x);
+      return exactKey(c.name) !== key && coreKey(c.name) !== core && nameTokens.every((x, i) => t[i] === x);
     });
 
     const first = exact.length ? exact : prefixed.length ? prefixed : orgs.slice(0, MAX_ENTITIES_PER_NAME);
-    let retrieved = first.length ? await firstInvesting(first, MAX_INVESTOR_TRIES) : [];
+    // Several records can carry the firm's exact name, and the first one found is
+    // often the thinnest (Seedcamp: 3 investments vs 68 on "Seedcamp Limited").
+    // Read every exact match, up to six, and let the heaviest lead.
+    let retrieved = exact.length
+      ? (await retrieveAll(exact.slice(0, 6), INVESTOR_QUERY, 1)).filter((e) => investingWeight(e) > 0)
+      : first.length
+        ? await firstInvesting(first, MAX_INVESTOR_TRIES)
+        : [];
     if (!retrieved.length && exact.length && prefixed.length) {
       // The exact-name records hold no investments; try close names instead.
       retrieved = await firstInvesting(prefixed, 6);
@@ -600,8 +615,23 @@ export async function analyze(
       const best = people.sort((a, b) => personWeight(b) - personWeight(a))[0];
       if (best && personWeight(best) > investingWeight(retrieved[0])) return buildProfile(name, [best], all.length, scope);
     }
-    const primaryKey = exactKey(retrieved[0].name);
-    return buildProfile(name, retrieved.filter((e) => exactKey(e.name) === primaryKey), all.length, scope);
+    const primaryKey = coreKey(retrieved[0].name);
+    const firm = retrieved.filter((e) => coreKey(e.name) === primaryKey);
+    // The firm's own fund vehicles ("Seedcamp Investment Management LLP", "Seedcamp VI L.P.")
+    // hold investments too. Merge them only when the extra words are vehicle words.
+    const vehicles = prefixed.filter((c) => {
+      const extra = tokens(c.name).slice(nameTokens.length);
+      return extra.length > 0 && extra.every((t) => VEHICLE_WORDS.has(t));
+    });
+    if (vehicles.length && exact.length) {
+      const got = (await retrieveAll(vehicles.slice(0, 3), INVESTOR_QUERY, 1)).filter((e) => investingWeight(e) > 0);
+      firm.push(...got);
+      if (got.length) step(scope, `Merged ${got.length} fund vehicle record${got.length === 1 ? "" : "s"} (${got.map((g) => g.name).join(", ")})`, "ok");
+    }
+    const profile = buildProfile(name, firm, all.length, scope);
+    // Show the name the founder typed when it is the same firm ("Seedcamp", not "Seedcamp Limited").
+    if (coreKey(profile.name) === core) profile.name = name.trim();
+    return profile;
   }
 
   /** A person's weight: investments, plus roles at companies (each counts double: they are the conflict signal). */

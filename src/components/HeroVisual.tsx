@@ -83,7 +83,7 @@ const BASE_FUNDS: Fund[] = [
     name: "Fund A",
     y: 66,
     tone: "red",
-    pill: "Direct conflict",
+    pill: "Backs your competitor",
     line: "Led your competitor's Series A, 9 months ago",
     share: "Teaser only",
     mid: "round",

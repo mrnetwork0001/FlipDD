@@ -95,7 +95,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
               </Bubble>
               <Bubble who="FlipDD" tone="dark">
                 2 of your 2 meetings are within one step of Lovable. Round exposure 65 out of 100.{" "}
-                <span className="text-paper">Creandum: direct conflict. Backed Lovable, February 2025. Teaser only.</span>{" "}
+                <span className="text-paper">Creandum: backs your competitor. Backed Lovable, February 2025. Teaser only.</span>{" "}
                 Northzone: co-invests with Accel, which led Lovable.
               </Bubble>
               <Bubble who="You" tone="selfOnDark">
@@ -142,7 +142,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
                   <VoiceNote seconds={6} />
                 </Bubble>
                 <Bubble who="FlipDD">
-                  <b>Creandum</b> · Direct conflict. Backed Lovable, Feb 2025. Share: <i>Teaser only</i>. Plus a voice reply.
+                  <b>Creandum</b> · Backs your competitor. Backed Lovable, Feb 2025. Share: <i>Teaser only</i>. Plus a voice reply.
                 </Bubble>
               </div>
               {bot && (
@@ -170,7 +170,7 @@ export default function OnTheGo({ phone, telegram }: { phone?: string; telegram?
                 ask. Ask Cala takes questions by voice too.
               </p>
               <p className="mt-3 rounded-xl bg-paper px-3.5 py-2.5 font-mono text-[12px] leading-relaxed text-ink/75 ring-1 ring-inset ring-line">
-                &ldquo;Meeting 8 of 8: Creandum. Direct conflict. Backed Lovable, February 2025. Share a teaser only.&rdquo;
+                &ldquo;Meeting 8 of 8: Creandum. Backs your competitor. Backed Lovable, February 2025. Share a teaser only.&rdquo;
               </p>
               <div className="mt-4 flex items-center gap-2 text-sm">
                 <Link href="/app" className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 font-semibold text-paper hover:bg-ink/85">
