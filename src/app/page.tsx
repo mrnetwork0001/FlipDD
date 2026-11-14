@@ -330,7 +330,7 @@ export default async function Landing() {
             </p>
           </div>
         </Reveal>
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
           {TRAPS.map((t, i) => (
             <Reveal key={t.n} delay={i * 120}>
               <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-1 hover:border-ink/40">
@@ -362,7 +362,7 @@ export default async function Landing() {
                       title={`From a real run, ${show.date}`}
                     >
                       <span className="shrink-0 uppercase text-muted">Found</span>
-                      <span className="truncate text-ink/85">
+                      <span className="min-w-0 truncate text-ink/85">
                         <span className="text-signal">!</span> {show.traps[t.evidence]}
                       </span>
                     </p>
@@ -399,12 +399,13 @@ export default async function Landing() {
                   {ranked.map((r) => (
                     <li key={r.fund} className="flex items-center gap-4 rounded-xl border border-line bg-card px-4 py-3">
                       <span className={`h-8 w-1 shrink-0 rounded-full ${LIGHT_BAR[r.level]}`} />
-                      <span className="w-40 shrink-0">
-                        <span className="block text-sm font-semibold">{r.fund}</span>
-                        <span className="block text-[11px] text-muted">{r.pill}</span>
+                      <span className="min-w-0 flex-1 sm:w-40 sm:flex-none">
+                        <span className="block truncate text-sm font-semibold">{r.fund}</span>
+                        <span className="block truncate text-[11px] text-muted">{r.pill}</span>
                       </span>
-                      <span className="hidden flex-1 truncate text-sm text-muted sm:block">{r.line}</span>
-                      <span className="ml-auto shrink-0 font-mono text-[11px] text-ink/70">{r.share}</span>
+                      <span className="hidden min-w-0 flex-1 truncate text-sm text-muted sm:block">{r.line}</span>
+                      {/* Wraps on phones instead of pushing the page wider than the screen. */}
+                      <span className="ml-auto max-w-[45%] text-right font-mono text-[11px] leading-snug text-ink/70 sm:max-w-none sm:shrink-0">{r.share}</span>
                     </li>
                   ))}
                 </ul>
