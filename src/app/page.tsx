@@ -626,10 +626,16 @@ export default async function Landing() {
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-paper/10 bg-night text-paper">
         {publicImage("art", "before-slush") ? (
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] lg:block">
+          // A founder at the door of a snowy Slush hall. The picture's left half is
+          // night sky, so the headline sits there; phones get a darker veil.
+          <div className="pointer-events-none absolute inset-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={publicImage("art", "before-slush")} alt="" className="h-full w-full object-cover opacity-90" />
-            <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-night to-transparent" />
+            <img
+              src={publicImage("art", "before-slush")}
+              alt=""
+              className="h-full w-full object-cover object-[72%_62%] opacity-45 lg:object-[center_62%] lg:opacity-95"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-night via-night/40 to-transparent lg:via-transparent" />
           </div>
         ) : (
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] opacity-90 lg:block">
@@ -638,7 +644,7 @@ export default async function Landing() {
             </div>
           </div>
         )}
-        <div className="relative mx-auto max-w-[85.5rem] px-5 py-24">
+        <div className="relative mx-auto max-w-[85.5rem] px-5 py-24 lg:py-36">
           <SectionTag n="06" title="Before Slush" dark />
           <h2 className="max-w-2xl font-serif text-5xl leading-[1.05] sm:text-7xl">
             Check your meeting list before you walk in.
@@ -650,7 +656,7 @@ export default async function Landing() {
             Launch app
           </Link>
         </div>
-        <div className="relative border-t border-paper/10">
+        <div className="relative border-t border-paper/10 bg-night/85 backdrop-blur-sm">
           <div className="mx-auto flex max-w-[85.5rem] flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-paper/50">
             <Wordmark tone="light" />
             <CalaLogo label="Data from" tone="light" height={20} className="font-mono text-[11px] uppercase tracking-[0.14em]" />
