@@ -16,7 +16,8 @@
     "timing": "node scripts/timing.mjs",
     "capture": "node scripts/capture.mjs",
     "encode": "node scripts/encode.mjs",
-    "stills": "node scripts/stills.mjs"
+    "stills": "node scripts/stills.mjs",
+    "stock": "node scripts/stock.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.530",

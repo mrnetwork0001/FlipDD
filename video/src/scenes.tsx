@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Img, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Img, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { scene, wordAt } from "./timing";
 import { C, mono, sans, serif, serifItalic } from "./theme";
 import { clamp, expo, pop, soft } from "./ui/motion";
@@ -19,6 +19,27 @@ export function useCue(id: string) {
 const Fill: React.FC<{ bg: string; color?: string; children: React.ReactNode }> = ({ bg, color = C.ink, children }) => (
   <AbsoluteFill style={{ background: bg, color, fontFamily: sans, overflow: "hidden" }}>{children}</AbsoluteFill>
 );
+
+/**
+ * Real people (stock B-roll, see data/stock.json) as a full-bleed cutaway: a slow
+ * push-in, a light warm grade to sit with the film, and a fade at both ends.
+ */
+const Stock: React.FC<{ id: number; from?: number; dur: number; at?: number; shade?: number; position?: string }> = ({ id, from = 0, dur, at = 0, shade = 0.25, position = "50% 50%" }) => {
+  const f = useCurrentFrame() - at;
+  if (f < -1 || f > dur + 1) return null;
+  const o = interpolate(f, [0, 8, dur - 8, dur], [0, 1, 1, 0], clamp);
+  const z = interpolate(f, [0, dur], [1.04, 1.12], clamp);
+  return (
+    <AbsoluteFill style={{ opacity: o }}>
+      <Sequence from={at} layout="none">
+        <AbsoluteFill style={{ transform: `scale(${z})` }}>
+          <OffthreadVideo src={staticFile(`footage/stock/${id}.mp4`)} startFrom={from} muted style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: position, filter: "sepia(0.18) saturate(0.85) contrast(1.06) brightness(0.96)" }} />
+        </AbsoluteFill>
+      </Sequence>
+      <AbsoluteFill style={{ background: `linear-gradient(90deg, rgba(21,18,14,${0.55 + shade}) 0%, rgba(21,18,14,${shade}) 55%, rgba(21,18,14,0.05) 100%)` }} />
+    </AbsoluteFill>
+  );
+};
 
 /** Fade, rise and un-blur for any block. */
 const In: React.FC<{ at: number; dur?: number; y?: number; x?: number; out?: number; style?: React.CSSProperties; children: React.ReactNode }> = ({ at, dur = 16, y = 26, x = 0, out, style, children }) => {
@@ -242,7 +263,9 @@ export const Problem: React.FC = () => {
       <AbsoluteFill style={{ transform: `scale(${z})`, transformOrigin: "65% 60%" }}>
         <Img src={staticFile("brand/before-slush.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "60% 55%" }} />
       </AbsoluteFill>
-      <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(21,18,14,0.97) 0%, rgba(21,18,14,0.75) 45%, rgba(21,18,14,0.15) 80%)" }} />
+      {/* real people: investors across the table, then the event floor */}
+      <Stock id={42644} from={30} at={0} dur={rel("Most") - 4} shade={0.3} />
+      <Stock id={13192} from={60} at={rel("Most") - 6} dur={dur - rel("Most") + 8} shade={0.3} />
       <div style={{ position: "absolute", left: 120, top: 150, width: 880, fontFamily: serif, fontSize: 82, lineHeight: 1.05 }}>
         <Spoken id="problem" range={[0, 8]} accent={{ "numbers.": C.signal }} />
         <Spoken id="problem" range={[8, 15]} style={{ marginTop: 26, fontSize: 64, color: "rgba(244,241,232,0.8)" }} accent={{ "name.": C.signal }} />
@@ -299,10 +322,15 @@ export const Check: React.FC = () => {
   const press = rel("FlipDD") - 4;
   const S = Math.max(0, markOf("check", "check.press") - press);
   const hundred = rel("hundred");
+  const handoff = press - 10;
   return (
     <Fill bg={C.paper}>
-      <Browser name="check" url={URL} width={W} left={BX} top={48} light startFrom={S}
-        cams={[{ f: 0, z: 1 }, { f: hundred - 20, z: 1 }, { f: hundred + 10, rect: { x: 1150, y: 0, w: 450, h: 120 }, z: 1.0 }]} />
+      <Sequence from={handoff - 4} layout="none">
+      <Browser name="check" url={URL} width={W} left={BX} top={48} light startFrom={S + handoff - 4}
+        cams={[{ f: 0, z: 1 }, { f: hundred - 20 - (handoff - 4), z: 1 }, { f: hundred + 10 - (handoff - 4), rect: { x: 1150, y: 0, w: 450, h: 120 }, z: 1.0 }]} enter={-30} />
+      </Sequence>
+      {/* a real person typing the list, then the real app */}
+      <Stock id={4827} from={45} at={0} dur={handoff + 6} shade={0.05} />
       <Chip at={hundred} color={C.ink} style={{ left: 1260, top: 150 }}>
         {run.stats.records} CALA RECORDS
       </Chip>
@@ -393,7 +421,8 @@ export const Go: React.FC = () => {
   const callAt = rel("call.") - 16;
   return (
     <Fill bg={C.paper}>
-      <div style={{ position: "absolute", left: 120, top: 120, width: 760, fontFamily: serif, fontSize: 76, lineHeight: 1.05, opacity: interpolate(f, [callAt - 10, callAt], [1, 0], clamp) }}>
+      <Stock id={4915} from={90} at={0} dur={rel("Telegram") + 4} shade={0.35} />
+      <div style={{ position: "absolute", left: 120, top: 120, width: 760, fontFamily: serif, fontSize: 76, lineHeight: 1.05, color: f < rel("Telegram") ? C.paper : C.ink, opacity: interpolate(f, [callAt - 10, callAt], [1, 0], clamp) }}>
         <Spoken id="go" line={0} range={[0, 6]} accent={{ "phone.": C.signal }} />
       </div>
       {/* Telegram: the owner's real screen recording goes in the phone */}
@@ -408,14 +437,16 @@ export const Go: React.FC = () => {
       </div>
       {/* the phone line */}
       <Sequence from={callAt} layout="none">
-        <div style={{ position: "absolute", left: 300, top: 290 }}><CallMark size={360} /></div>
-        <Phone left={1220} top={110} at={4}>
-          <Placeholder label="A real call to the FlipDD line" sub="Screen recording of your phone during the call" style={{ inset: 0, borderRadius: 50, border: "none" }} />
-        </Phone>
-        <div style={{ position: "absolute", left: 260, top: 720, fontFamily: serif, fontSize: 88 }}>
+        {/* a real person on a call, walking */}
+        <Stock id={32043} from={60} at={0} dur={s.durationInFrames - callAt + 12} shade={0.35} position="60% 40%" />
+        <div style={{ position: "absolute", left: 120, top: 300 }}><CallMark size={300} /></div>
+      </Sequence>
+      {/* scene-timed, so it sits outside the cut */}
+      {f >= callAt && (
+        <div style={{ position: "absolute", left: 120, top: 660, fontFamily: serif, fontSize: 104, color: C.paper }}>
           <Spoken id="go" line={2} accent={{ "call.": C.signal }} />
         </div>
-      </Sequence>
+      )}
     </Fill>
   );
 };
