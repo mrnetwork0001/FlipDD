@@ -179,11 +179,11 @@ function Rows({ rows, cols }: { rows: PrepRow[]; cols: [string, string][] }) {
   );
 }
 
-function Slow({ state, rows, cols, empty }: { state: "loading" | "done" | "error"; rows: PrepRow[]; cols: [string, string][]; empty: string }) {
+function Slow({ state, rows, cols, empty, error }: { state: "loading" | "done" | "error"; rows: PrepRow[]; cols: [string, string][]; empty: string; error?: string }) {
   const [all, setAll] = useState(false);
   if (state === "loading")
     return <p className="flex items-center gap-2 text-sm text-muted"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Asking Cala&apos;s knowledge query. This one takes 30 to 60 seconds.</p>;
-  if (state === "error") return <Muted>Cala didn&apos;t answer this in time. Close and reopen the prep to try again.</Muted>;
+  if (state === "error") return <Muted>{error || "Cala didn't answer this in time. Close and reopen the prep to try again."}</Muted>;
   if (!rows.length) return <Muted>{empty}</Muted>;
   return (
     <>
@@ -204,8 +204,8 @@ export default function MeetingPrepPanel({
 }) {
   const [prep, setPrep] = useState<MeetingPrep | null>(null);
   const [error, setError] = useState("");
-  const [exits, setExits] = useState<{ state: "loading" | "done" | "error"; rows: PrepRow[] }>({ state: "loading", rows: [] });
-  const [market, setMarket] = useState<{ state: "loading" | "done" | "error"; rows: PrepRow[]; note?: string }>({ state: "loading", rows: [] });
+  const [exits, setExits] = useState<{ state: "loading" | "done" | "error"; rows: PrepRow[]; error?: string }>({ state: "loading", rows: [] });
+  const [market, setMarket] = useState<{ state: "loading" | "done" | "error"; rows: PrepRow[]; note?: string; error?: string }>({ state: "loading", rows: [] });
   const noteKey = `${runId}:${investor.input}`;
   const [note, setNote] = useState<Note>(() => emptyNote(investor));
   const [copied, setCopied] = useState(false);
@@ -226,8 +226,8 @@ export default function MeetingPrepPanel({
         return j;
       });
     call().then(setPrep).catch((e) => !ctl.signal.aborted && setError((e as Error).message));
-    call("exits").then((j) => setExits({ state: "done", rows: j.rows || [] })).catch(() => !ctl.signal.aborted && setExits({ state: "error", rows: [] }));
-    call("market").then((j) => setMarket({ state: "done", rows: j.rows || [], note: j.note })).catch(() => !ctl.signal.aborted && setMarket({ state: "error", rows: [] }));
+    call("exits").then((j) => setExits({ state: "done", rows: j.rows || [] })).catch((e) => !ctl.signal.aborted && setExits({ state: "error", rows: [], error: (e as Error).message }));
+    call("market").then((j) => setMarket({ state: "done", rows: j.rows || [], note: j.note })).catch((e) => !ctl.signal.aborted && setMarket({ state: "error", rows: [], error: (e as Error).message }));
     return () => ctl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investor.input]);
@@ -371,12 +371,12 @@ export default function MeetingPrepPanel({
             </>
           )}
 
-          <Section n="06" fold preview={exits.state === "loading" ? "loading…" : exits.rows.length ? exits.rows.slice(0, 3).map((r) => r.company).join(", ") + (exits.rows.length > 3 ? "…" : "") : "none on record"} title="Their exits">
-            <Slow state={exits.state} rows={exits.rows} cols={[["company", ""], ["outcome", ""], ["acquirer_or_exchange", "·"], ["year", "·"]]} empty="No acquisitions or listings of their portfolio companies on record." />
+          <Section n="06" fold preview={exits.state === "loading" ? "loading…" : exits.state === "error" ? "couldn't load" : exits.rows.length ? exits.rows.slice(0, 3).map((r) => r.company).join(", ") + (exits.rows.length > 3 ? "…" : "") : "none on record"} title="Their exits">
+            <Slow state={exits.state} error={exits.error} rows={exits.rows} cols={[["company", ""], ["outcome", ""], ["acquirer_or_exchange", "·"], ["year", "·"]]} empty="No acquisitions or listings of their portfolio companies on record." />
           </Section>
 
-          <Section n="07" fold preview={market.state === "loading" ? "loading…" : market.rows.length ? `${new Set(market.rows.map((r) => r.company)).size} companies` : "none on record"} title="Who raised in your space this year">
-            <Slow state={market.state} rows={market.rows} cols={[["company", ""], ["round", ""], ["amount", "·"], ["date", "·"], ["lead_investor", "· led by"]]} empty={market.note || "No raises in your space on record for the past year."} />
+          <Section n="07" fold preview={market.state === "loading" ? "loading…" : market.state === "error" ? "couldn't load" : market.rows.length ? `${new Set(market.rows.map((r) => r.company)).size} companies` : "none on record"} title="Who raised in your space this year">
+            <Slow state={market.state} error={market.error} rows={market.rows} cols={[["company", ""], ["round", ""], ["amount", "·"], ["date", "·"], ["lead_investor", "· led by"]]} empty={market.note || "No raises in your space on record for the past year."} />
           </Section>
 
           <Section n="08" title="Your note" aside={<span className="text-[11px] text-muted">saved in this browser</span>}>
