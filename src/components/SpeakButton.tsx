@@ -29,7 +29,8 @@ export default function SpeakButton({
   const [on, setOn] = useState(false);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
-    setSupported(speechSupported());
+    // ElevenLabs plays through an audio element, which every browser has; the built-in voice is the fallback.
+    setSupported(typeof Audio !== "undefined" || speechSupported());
     setOn(speakingId() === id);
     return onSpeechChange((p, f) => {
       setOn(p === id);

@@ -5,6 +5,10 @@
 // briefing stops the one playing. Text is spoken sentence by sentence, since
 // long utterances get cut off on Chrome and Safari.
 //
+// When the server has an ElevenLabs key (/api/speak), briefings play in
+// FlipDD's ElevenLabs voice: the text goes in chunks, the next fetched while one
+// plays. Without it, or if it fails, the browser's own voice takes over.
+//
 // Chrome's "Google …" voices stream from Google and can fail without a sound,
 // and Chrome drops an utterance queued right after cancel(). So: voices built
 // into the device first, a short pause after stopping, and a watchdog that
@@ -51,8 +55,75 @@ function pickVoice(list: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefin
   return local[0] || en.find((v) => !/^Google/i.test(v.name)) || en[0];
 }
 
+// ---------- ElevenLabs through the server ----------
+
+let player: HTMLAudioElement | null = null;
+let urls: string[] = [];
+let elevenState: Promise<boolean> | null = null;
+// A zero-length WAV: played inside the click, it unlocks audio on iPhone for the clips that follow.
+const SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+
+const elevenEnabled = () =>
+  (elevenState ??= fetch("/api/speak")
+    .then((r) => r.json())
+    .then((j: { enabled?: boolean }) => Boolean(j.enabled))
+    .catch(() => false));
+
+function clip(text: string): Promise<string> {
+  return fetch("/api/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }).then(async (r) => {
+    if (!r.ok) throw new Error(`speak ${r.status}`);
+    const url = URL.createObjectURL(await r.blob());
+    urls.push(url);
+    return url;
+  });
+}
+
+/** Plays `text` in the ElevenLabs voice. False if the first clip fails (the caller falls back). */
+async function playEleven(text: string, mine: number): Promise<boolean> {
+  const parts = speechChunks(text, 480);
+  let next: Promise<string> | null = clip(parts[0]);
+  for (let i = 0; i < parts.length; i++) {
+    let url: string;
+    try {
+      url = await next!;
+    } catch {
+      if (i === 0) return false;
+      break;
+    }
+    if (mine !== session || !player) return true;
+    next = i + 1 < parts.length ? clip(parts[i + 1]) : null;
+    next?.catch(() => undefined);
+    player.src = url;
+    try {
+      await player.play();
+    } catch {
+      if (i === 0) return false;
+      break;
+    }
+    await new Promise<void>((done) => {
+      const p = player!;
+      const end = () => {
+        p.removeEventListener("ended", end);
+        p.removeEventListener("error", end);
+        p.removeEventListener("pause", end);
+        done();
+      };
+      p.addEventListener("ended", end);
+      p.addEventListener("error", end);
+      p.addEventListener("pause", end);
+    });
+    if (mine !== session) return true;
+  }
+  playing = null;
+  emit();
+  return true;
+}
+
 export function stopSpeaking() {
   session++;
+  if (player) player.pause();
+  for (const u of urls) URL.revokeObjectURL(u);
+  urls = [];
   if (speechSupported()) window.speechSynthesis.cancel();
   if (playing !== null) {
     playing = null;
@@ -62,12 +133,30 @@ export function stopSpeaking() {
 
 /** Speaks `text`; `id` names who asked, so their button shows Stop (or a failure note). */
 export async function speak(id: string, text: string, onEnd?: () => void) {
-  if (!speechSupported()) return;
+  if (typeof window === "undefined") return;
   stopSpeaking();
   const mine = ++session;
   playing = id;
   failed = null;
   emit();
+  // Unlock audio while still inside the click (iPhone needs this for later clips).
+  player ??= new Audio();
+  player.src = SILENT;
+  player.play().catch(() => undefined);
+  if (await elevenEnabled()) {
+    const ok = await playEleven(text, mine);
+    if (mine !== session) return;
+    if (ok) {
+      onEnd?.();
+      return;
+    }
+  }
+  if (!speechSupported()) {
+    playing = null;
+    failed = id;
+    emit();
+    return;
+  }
   const synth = window.speechSynthesis;
   const list = await voices();
   // Chrome drops an utterance queued in the same tick as cancel().
