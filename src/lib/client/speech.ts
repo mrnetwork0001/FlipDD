@@ -85,7 +85,10 @@ function clip(text: string): Promise<string> {
 
 /** Plays `text` in the ElevenLabs voice. False if the first clip fails (the caller falls back). */
 async function playEleven(text: string, mine: number): Promise<boolean> {
-  const parts = speechChunks(text, 480);
+  // A short first piece starts the voice almost at once; the rest is fetched while it plays.
+  const first = speechChunks(text, 140)[0] || text;
+  const rest = text.slice(text.indexOf(first) + first.length).trim();
+  const parts = [first, ...(rest ? speechChunks(rest, 480) : [])];
   const player = getPlayer();
   let next: Promise<string> | null = clip(parts[0]);
   for (let i = 0; i < parts.length; i++) {

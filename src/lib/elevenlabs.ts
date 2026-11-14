@@ -12,8 +12,8 @@ export const elevenKey = () => {
   return k && !/^your_/.test(k) ? k : undefined;
 };
 
-/** Michael Onoja: the energetic narrator of the demo film. Override with ELEVENLABS_VOICE_ID. */
-export const voiceId = () => process.env.ELEVENLABS_VOICE_ID?.trim() || "lessJP1z7bvQVbfEDaZ9";
+/** Liam: an energetic, quick American-English voice. Override with ELEVENLABS_VOICE_ID. */
+export const voiceId = () => process.env.ELEVENLABS_VOICE_ID?.trim() || "TX3LPaxmHKxFdv7VOQHJ";
 /** Flash: low latency, made for live playback. Override with ELEVENLABS_MODEL. */
 const model = () => process.env.ELEVENLABS_MODEL?.trim() || "eleven_flash_v2_5";
 
@@ -36,7 +36,7 @@ export async function elevenSpeech(text: string): Promise<Buffer> {
     body: JSON.stringify({
       text: spoken,
       model_id: model(),
-      voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true, speed: 1.05 },
+      voice_settings: { stability: 0.4, similarity_boost: 0.8, style: 0.4, use_speaker_boost: true, speed: Number(process.env.ELEVENLABS_SPEED || 1.15) },
     }),
     signal: AbortSignal.timeout(30_000),
   });
