@@ -7,3 +7,9 @@ next-env.d.ts
 *.tsbuildinfo
 .DS_Store
 .next-build/
+# demo film: sources are tracked, generated media is not
+video/node_modules/
+video/out/
+video/.cache/
+video/public/footage/
+video/public/stills/
