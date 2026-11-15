@@ -40,6 +40,8 @@ await api("setMyCommands", {
   commands: [
     { command: "check", description: "Check investors against competitors: Creandum, Northzone vs Lovable" },
     { command: "ask", description: "Ask Cala's graph about any fund or company" },
+    { command: "key", description: "Use your own Cala key in this chat: /key clsk_…" },
+    { command: "forgetkey", description: "Remove your Cala key" },
     { command: "help", description: "How to use FlipDD" },
   ],
 });

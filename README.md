@@ -35,7 +35,7 @@ The whole list then gets a **round view** (`src/lib/roundRisk.ts`). It gives the
 | **Voice** | **Listen** to any briefing, or **Play my day** for every meeting in order, in an ElevenLabs voice (the browser's own voice is the fallback). | Investors tab, brief page |
 | **Telegram** | `/check Creandum, Northzone vs Lovable`, then `/prep Creandum` for that meeting's note as text and an ElevenLabs voice note. Voice notes work too, and questions are answered from Cala's MCP server. | [@tryflipdd_bot](https://t.me/tryflipdd_bot), or the Telegram button bottom-right |
 | **Phone line** | Call a Twilio number, say who you're meeting, and hear the result. Follow-up questions work on the same call. | Call **+1 816 451 1318**, or the phone button bottom-right |
-| **Your own Cala key** | If FlipDD's credits run out, or you want many checks, paste your own key. It stays in your browser and is sent only with your requests; anything already cached costs it nothing. | Under the form, or the button on a credits error |
+| **Your own Cala key** | If FlipDD's credits run out, or you want many checks, paste your own key. In the web app it stays in your browser and is sent only with your requests. In Telegram, `/key clsk_…` saves it for that chat: the bot deletes the message at once, tests the key with one Cala call, stores it encrypted for 30 days, and `/forgetkey` removes it. Anything already cached costs it nothing. | Under the form, the button on a credits error, or `/key` in Telegram |
 | **MCP server** | FlipDD's own checks as tools for Claude or Cursor: `check_investors`, `find_competitors`, `find_clean_investors`, `investor_profile`, `slush_check`, `watch_news`. | `/api/mcp` |
 
 Following Cala's feedback, the results page stays calm: one line for the round, one card per meeting with a **Prep** button, and the details (step log, conflict map, round breakdown) on request. Verdicts describe rather than alarm ("Backs your competitor", "One step away"), since backing competitors is normal for investors; the note is about using that, not avoiding them. The app works the same on phones. The form becomes a drawer, and the meeting list is a cart you add funds to from Find investors. **Recent checks** reopens any earlier run without asking Cala again. The header shows how many Cala calls were live and how old any cached answer is.
@@ -114,6 +114,7 @@ flowchart LR
 | `GEMINI_API_KEY` | Server env | Judge competition, write questions, plan the question agent's calls, transcribe voice notes | Add facts: prompts carry only Cala's records |
 | `ELEVENLABS_API_KEY` | Server env | Speak briefings and Telegram voice replies (`/api/speak`, capped per visitor) | Reach the browser: audio comes through the server |
 | A visitor's own Cala key | That visitor's browser | Run that visitor's checks (`x-cala-key` header) | Be stored or logged on the server |
+| A founder's own Cala key in Telegram | The store, AES-256-GCM encrypted under a hash of the chat id, 30 days (`src/lib/tgKey.ts`) | Run that chat's checks, notes and questions | Be logged, echoed back (replies show only `clsk_ab…wxyz`) or used by another chat |
 | `TWILIO_AUTH_TOKEN` | Server env | Verify `X-Twilio-Signature` on every call webhook | Place calls: FlipDD only answers them |
 | `TELEGRAM_WEBHOOK_SECRET` | Server env, Telegram | Prove an update came from Telegram | Read other chats |
 | `FLIPDD_MCP_TOKEN` | Server env, your MCP client | Require a bearer token on `/api/mcp` | Unlock anything else |
@@ -239,8 +240,9 @@ The demo film and the pitch deck show this run. Cala's records keep changing, so
 - **Professional facts only.** Meeting prep shows partners' roles, past companies and schools, and strips birth years and personal details even when Cala's description includes them.
 - **The fullest record wins.** A firm can be a dozen Cala records (Seedcamp: the firm, "Seedcamp Limited", its GP and fund vehicles). FlipDD reads every exact match, lets the one with the most investments lead and merges the firm's own fund vehicles, so a thin duplicate can't hide a real stake.
 - **Limits.** 12 investors and 6 competitors per check (`src/app/api/analyze/route.ts`). The Ask agent makes at most 10 Cala calls, one slow query at a time. Concurrency is 5 Cala calls and 6 Gemini calls by default, and phone checks stop after 4 minutes.
+- **Keys sent to the bot are handled with care.** The bot deletes any message containing a Cala key, refuses keys sent in groups, and never passes a pasted key to Gemini or the question agent. The encryption key comes from `TELEGRAM_KEY_SECRET` (or the bot's own secrets).
 - **Webhooks are verified.** Twilio requests are checked with HMAC-SHA1 against `TWILIO_AUTH_TOKEN`, and the test matches Twilio's official library. Telegram updates must carry `TELEGRAM_WEBHOOK_SECRET`. Both lines can be limited to listed chats or callers (`TELEGRAM_ALLOWED_CHATS`, `TWILIO_ALLOWED_CALLERS`).
-- **Tests.** 38 unit tests cover scoring, name matching, round risk, news matching, Telegram formatting, spoken text and phone webhooks. All 38 passed on 15 November 2026.
+- **Tests.** 41 unit tests cover scoring, name matching, round risk, news matching, Telegram formatting, own-key encryption, spoken text and phone webhooks. All 41 passed on 15 November 2026.
 
 ## What's real and what's simulated
 
@@ -284,6 +286,7 @@ npm run typecheck
 | `FLIPDD_PUBLIC_URL` | Links in bot replies and previews | Relative links |
 | `FLIPDD_MCP_TOKEN` | Bearer token for `/api/mcp` | MCP is open |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ALLOWED_CHATS` | Telegram bot | Bot is off |
+| `TELEGRAM_KEY_SECRET` | Encrypts founders' own Cala keys sent with `/key` | Derived from the webhook secret and bot token |
 | `TWILIO_AUTH_TOKEN`, `TWILIO_ACCOUNT_SID`, `TWILIO_ALLOWED_CALLERS`, `TWILIO_VOICE` | Phone line | Signatures are not checked |
 
 **The demo film** (optional) is built in `video/` with Remotion: `cd video && npm install`, then `npm run studio` to preview it. The voice, music and sound scripts (`npm run vo`, `music`, `sfx`) read `ELEVENLABS_API_KEY` from the environment or from `video/.env`, which git ignores. Stock clips are listed in `video/data/stock.json` and downloaded by `npm run stock`; they are not in the repository.
@@ -291,8 +294,8 @@ npm run typecheck
 **Test status** (15 November 2026):
 
 ```
-ℹ tests 38
-ℹ pass 38
+ℹ tests 41
+ℹ pass 41
 ℹ fail 0
 ```
 
@@ -351,6 +354,7 @@ src/
     voiceScript.ts            spoken briefings and spoken-request parsing
     voice.ts                  Gemini transcription and speech, Opus encoding
     telegram.ts telegramText.ts           Telegram bot
+    tgKey.ts                  a founder's own Cala key in Telegram, encrypted
     twiml.ts phoneCall.ts     phone line TwiML, signatures, jobs
     store.ts                  files or Upstash Redis
     client/                   browser-side speech player and own-key fetch

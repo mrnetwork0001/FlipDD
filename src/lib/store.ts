@@ -127,6 +127,16 @@ export async function cacheWrite(ns: string, key: string, value: { t: number; [k
   }
 }
 
+/** Removes an entry from namespace `ns`. Failures are ignored. */
+export async function cacheDelete(ns: string, key: string): Promise<void> {
+  try {
+    if (sharedStore()) await redis(["DEL", `cache:${ns}:${key}`]);
+    else await fs.rm(path.join(ROOT, ns, `${safeKey(key)}.json`), { force: true });
+  } catch {
+    // Nothing stored, or the store is down.
+  }
+}
+
 /** Cache for third-party API answers, keyed by the request. */
 export function diskCache(dir: string, ttlHours: number) {
   const ttl = ttlHours * 3600 * 1000;

@@ -14,7 +14,8 @@ import { interpretSpoken, synthesize, toOggOpus, transcribe, wavSeconds } from "
 import { speakable, spokenRoundup } from "./voiceScript";
 import { elevenKey, elevenOpus } from "./elevenlabs";
 import { meetingPrep, type MeetingPrep } from "./prep";
-import { cacheRead, cacheWrite } from "./store";
+import { cacheDelete, cacheRead, cacheWrite } from "./store";
+import { CALA_KEY_RE, KEY_TTL_DAYS, chatSlot, keySecret, maskKey, openKey, sealKey } from "./tgKey";
 import { coreKey } from "./names";
 import type { CompetitorSummary } from "./types";
 
@@ -131,6 +132,7 @@ const HELP =
   "or just type the question.\n\n" +
   "<b>Or send a voice note</b>\n“I'm meeting Creandum, Northzone and Index. My competitor is Lovable.”\n" +
   "You get the answer in text and as a voice message.\n\n" +
+  "<b>Out of FlipDD's credits? Use your own Cala key</b>\n<code>/key clsk_…</code> (from console.cala.ai). I delete the message right away and only this chat uses it. <code>/forgetkey</code> removes it.\n\n" +
   "Every answer comes from Cala's records, with sources in the web app.";
 
 function formatCheck(rows: InvestorResult[], competitors: string[], slush?: SlushReport): string {
@@ -171,8 +173,7 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
     await sendLong(chatId, "Write it as:\n<code>/check Creandum, Northzone vs Lovable</code>");
     return;
   }
-  const apiKey = process.env.CALA_API_KEY;
-  if (!apiKey) throw new Error("CALA_API_KEY is not set");
+  const apiKey = await calaKeyForChat(chatId);
   await tg("sendMessage", {
     chat_id: chatId,
     parse_mode: "HTML",
@@ -202,7 +203,7 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
   }
   if (!failure && budget.aborted) failure = "Cala's rate limit slowed this check down, so it stopped before giving answers. What was fetched is saved: send the same /check again to finish it.";
   if (failure) {
-    await sendLong(chatId, `The check stopped: ${esc(failure)}`);
+    await sendLong(chatId, `The check stopped: ${esc(failure)}${keyHint(failure)}`);
     return;
   }
   const rows = parsed.investors.map((n) => latest.get(n)).filter((r): r is InvestorResult => Boolean(r));
@@ -213,8 +214,7 @@ async function runCheck(chatId: number, text: string | CheckRequest, voice = fal
 }
 
 async function runAsk(chatId: number, question: string, voice = false): Promise<void> {
-  const apiKey = process.env.CALA_API_KEY;
-  if (!apiKey) throw new Error("CALA_API_KEY is not set");
+  const apiKey = await calaKeyForChat(chatId);
   await tg("sendMessage", { chat_id: chatId, text: "Asking Cala's graph. This takes 20 to 60 seconds." });
   const typing = setInterval(() => tg("sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => undefined), 4500);
   let calls = 0;
@@ -289,8 +289,7 @@ async function runPrep(chatId: number, name: string): Promise<void> {
     await sendLong(chatId, `No ${esc(name)} in your last check. Your list: ${esc(ctx.rows.map((x) => x.name).join(", "))}.`);
     return;
   }
-  const apiKey = process.env.CALA_API_KEY;
-  if (!apiKey) throw new Error("CALA_API_KEY is not set");
+  const apiKey = await calaKeyForChat(chatId);
   await tg("sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => undefined);
   const prep = await meetingPrep({ investor: r, competitors: ctx.competitors || [], startupName: "" }, apiKey);
   const { html, spoken } = prepSummary(r, prep);
@@ -321,10 +320,91 @@ async function runVoice(chatId: number, fileId: string, mime: string): Promise<v
   else if (request.question.length >= 5) await runAsk(chatId, request.question, true);
 }
 
+// ---- A founder's own Cala key (/key, /forgetkey) ----
+
+const KEY_NS = "tgkey";
+
+/** The chat's own Cala key if it set one, else FlipDD's. */
+async function calaKeyForChat(chatId: number): Promise<string> {
+  const secret = keySecret();
+  if (secret) {
+    const box = await cacheRead<{ t: number; v: string }>(KEY_NS, chatSlot(chatId));
+    const own = box && Date.now() - box.t < KEY_TTL_DAYS * 86400_000 ? openKey(box.v, secret) : null;
+    if (own) return own;
+  }
+  const k = process.env.CALA_API_KEY?.trim();
+  if (!k) throw new Error("CALA_API_KEY is not set");
+  return k;
+}
+
+/** Added to errors when Cala refused FlipDD's key, so the founder knows how to go on. */
+function keyHint(message: string): string {
+  return /credits|\b40[23]\b|refused/i.test(message)
+    ? "\n\nYou can keep going on your own Cala key: send <code>/key clsk_…</code> (get one at console.cala.ai). Only checks in this chat use it, and <code>/forgetkey</code> removes it."
+    : "";
+}
+
+/** Asks Cala one small question with the key: "ok", "refused", "credits" or "unknown". */
+async function tryCalaKey(key: string): Promise<"ok" | "refused" | "credits" | "unknown"> {
+  try {
+    const res = await fetch("https://api.cala.ai/v1/entities?name=Lovable&limit=1", {
+      headers: { "X-API-KEY": key },
+      signal: AbortSignal.timeout(15_000),
+      cache: "no-store",
+    });
+    if (res.ok) return "ok";
+    if (res.status === 401 || res.status === 403) return "refused";
+    if (res.status === 402) return "credits";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+async function runKey(chatId: number, messageId: number | undefined, isPrivate: boolean, key: string): Promise<void> {
+  // The key is in the chat: take the message down first, whatever happens next.
+  if (messageId) await tg("deleteMessage", { chat_id: chatId, message_id: messageId }).catch(() => undefined);
+  if (!isPrivate) {
+    await sendLong(chatId, "Don't share a Cala key in a group. I deleted that message if I could. Send <code>/key</code> to me in a private chat instead, and consider rotating that key at console.cala.ai.");
+    return;
+  }
+  if (!key) {
+    await sendLong(chatId, "Send your Cala key like this:\n<code>/key clsk_…</code>\nGet one at console.cala.ai. I delete the message as soon as I read it, and only checks in this chat use the key.");
+    return;
+  }
+  if (!CALA_KEY_RE.test(key)) {
+    await sendLong(chatId, "That doesn't look like a Cala key. They start with <code>clsk_</code>. I deleted the message.");
+    return;
+  }
+  const secret = keySecret();
+  if (!secret) {
+    await sendLong(chatId, "This bot can't store keys right now. Use your own key in the web app instead: tryflipdd.vercel.app/app");
+    return;
+  }
+  const verdict = await tryCalaKey(key);
+  if (verdict === "refused" || verdict === "credits") {
+    await sendLong(chatId, verdict === "credits" ? "Cala says that key has no credits left, so I didn't save it. I deleted the message." : "Cala refused that key, so I didn't save it. I deleted the message.");
+    return;
+  }
+  await cacheWrite(KEY_NS, chatSlot(chatId), { t: Date.now(), v: sealKey(key, secret) }, KEY_TTL_DAYS * 86400);
+  await sendLong(
+    chatId,
+    `Saved your Cala key (${esc(maskKey(key))})${verdict === "unknown" ? ". Cala didn't answer just now, so I couldn't test it yet" : " and it works"}. ` +
+      `I deleted your message. Checks, notes and questions in this chat now run on it; answers FlipDD already has cost it nothing. ` +
+      `It is stored encrypted for ${KEY_TTL_DAYS} days. Send <code>/forgetkey</code> to remove it sooner.`,
+  );
+}
+
+async function runForgetKey(chatId: number): Promise<void> {
+  await cacheDelete(KEY_NS, chatSlot(chatId));
+  await sendLong(chatId, "Done: your Cala key is removed. Checks in this chat use FlipDD's key again.");
+}
+
 export interface TelegramUpdate {
   update_id: number;
   message?: {
-    chat: { id: number };
+    message_id?: number;
+    chat: { id: number; type?: string };
     text?: string;
     from?: { first_name?: string };
     voice?: { file_id: string; duration?: number; mime_type?: string };
@@ -356,8 +436,15 @@ export async function handleUpdate(update: TelegramUpdate): Promise<void> {
   if (!text) return;
   const [cmd, ...rest] = text.split(/\s+/);
   const arg = rest.join(" ").trim();
+  const isPrivate = !msg?.chat.type || msg.chat.type === "private";
   try {
-    if (/^\/(start|help)(@\w+)?$/i.test(cmd)) await sendLong(chatId, HELP);
+    if (/^\/key(@\w+)?$/i.test(cmd)) await runKey(chatId, msg?.message_id, isPrivate, arg);
+    else if (/^clsk_/i.test(text) || /\bclsk_[A-Za-z0-9_-]{20,}/.test(text)) {
+      // A key pasted without /key: never send it to Cala's agent or Gemini as a question.
+      const found = text.match(/clsk_[A-Za-z0-9_-]{20,120}/)?.[0] || "";
+      await runKey(chatId, msg?.message_id, isPrivate, found);
+    } else if (/^\/forgetkey(@\w+)?$/i.test(cmd)) await runForgetKey(chatId);
+    else if (/^\/(start|help)(@\w+)?$/i.test(cmd)) await sendLong(chatId, HELP);
     else if (/^\/check(@\w+)?$/i.test(cmd)) await runCheck(chatId, arg);
     else if (/^\/prep(@\w+)?$/i.test(cmd)) {
       if (!arg) await sendLong(chatId, "Which investor? e.g. <code>/prep Creandum</code>");
@@ -370,6 +457,8 @@ export async function handleUpdate(update: TelegramUpdate): Promise<void> {
     else if (parseCheck(text)) await runCheck(chatId, text);
     else await runAsk(chatId, text);
   } catch (err) {
-    await tg("sendMessage", { chat_id: chatId, text: `Sorry, that failed: ${(err as Error).message}`.slice(0, 4000) }).catch(() => undefined);
+    await tg("sendMessage", { chat_id: chatId, text: `Sorry, that failed: ${(err as Error).message}`.slice(0, 3600) }).catch(() => undefined);
+    const hint = keyHint((err as Error).message);
+    if (hint) await sendLong(chatId, hint.trim()).catch(() => undefined);
   }
 }
