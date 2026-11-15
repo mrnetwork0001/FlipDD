@@ -4,7 +4,7 @@
 
 Some investors take a meeting to hear a pitch from a company that competes with one they already backed. FlipDD walks [Cala](https://cala.ai)'s knowledge graph for every investor on a founder's Slush list and gives each one a verdict, a share level (teaser, deck or data room) and a question to ask in the room. Everything is measured by one number: **round exposure**, the share of a founder's meetings that sit within one step of a competitor (0 to 100).
 
-Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: [tryflipdd.vercel.app](https://tryflipdd.vercel.app) · Telegram: [@tryflipdd_bot](https://t.me/tryflipdd_bot) · Demo: [youtu.be/Aq8Ene2pl6U](https://youtu.be/Aq8Ene2pl6U) · Code: [github.com/mrnetwork0001/FlipDD](https://github.com/mrnetwork0001/FlipDD) (private, access on request)
+Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: [tryflipdd.vercel.app](https://tryflipdd.vercel.app) · Telegram: [@tryflipdd_bot](https://t.me/tryflipdd_bot) · Demo: [youtu.be/Aq8Ene2pl6U](https://youtu.be/Aq8Ene2pl6U) · Code: [github.com/mrnetwork0001/FlipDD](https://github.com/mrnetwork0001/FlipDD)
 
 **Judges, start here:** open [tryflipdd.vercel.app/app](https://tryflipdd.vercel.app/app), press **Load example**, then **Check 8 investors**. It checks 8 real funds against Lovable on Cala's graph with no account, in about a second because the answers are cached. Press **Prep** on Creandum for the meeting note, or **Play my day** to hear the whole round. On a phone, message [@tryflipdd_bot](https://t.me/tryflipdd_bot) `/check Creandum, Northzone vs Lovable`, then `/prep Creandum`, or call **+1 816 451 1318** and say "Creandum and Northzone against Lovable".
 

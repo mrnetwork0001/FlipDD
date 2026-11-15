@@ -1,11 +1,11 @@
 // Loads the ElevenLabs key at runtime. Never log or persist it.
-// Order: process.env.ELEVENLABS_API_KEY, then /Users/mrnetwork/Syntura/video/.env.
+// Order: process.env.ELEVENLABS_API_KEY, then video/.env (git-ignored), or the file in ELEVENLABS_ENV_FILE.
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const KEY_FILE = "/Users/mrnetwork/Syntura/video/.env";
+const KEY_FILE = process.env.ELEVENLABS_ENV_FILE || join(ROOT, ".env");
 
 function load() {
   if (process.env.ELEVENLABS_API_KEY) return process.env.ELEVENLABS_API_KEY.trim();
@@ -20,7 +20,7 @@ function load() {
 
 export const key = load();
 if (!key) {
-  console.error("ELEVENLABS_API_KEY not found (env or Syntura/video/.env).");
+  console.error("ELEVENLABS_API_KEY not found (set it, or put it in video/.env).");
   process.exit(1);
 }
 
