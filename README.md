@@ -14,7 +14,7 @@ Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: [tryfli
 
 | Check | What it finds | Try it |
 | --- | --- | --- |
-| **Direct stake** | The fund, its lender arm or an angel invested in a competitor. Each finding is dated from Cala's funding-round records, with the round name and whether they led it. A lead or recent stake means **Teaser only**. *Creandum backed Lovable in February 2025.* | `/app` → **Load example** |
+| **Direct stake** | The fund, its lender arm or an angel invested in a competitor. Each finding is dated from Cala's funding-round records, with the round name and whether they led it. A lead or recent stake means **Teaser only**. *Creandum led Lovable's Series B in December 2025.* | `/app` → **Load example** |
 | **One step away** | The fund co-invests with someone who backs the competitor. The link is scored 0 to 100 from how many rounds they shared and how recently (`src/lib/scoring.ts`). *Northzone and Index Ventures both co-invest with Accel, which led Lovable's round.* | Open the Northzone row |
 | **Lookalike** | A portfolio company that does what you do, though it isn't on your competitor list. Gemini judges it only from the descriptions Cala holds. | Open the Atomico row (Framer) |
 | **People** | A partner who sits on a competitor's board or founded one. They are matched on the same person record in Cala, not just the same name. | Rows show a **Person** finding |
@@ -29,7 +29,7 @@ The whole list then gets a **round view** (`src/lib/roundRisk.ts`). It gives the
 | **Find investors** | Funds that back companies *near* yours (same buyers, different product) and pass the same conflict checks. Backers of direct rivals are dropped, and the dropped list is shown. The example considered 58 and kept 6. | **Find investors** tab |
 | **Slush 2026** | Searches Cala's Slush 2026 event (2,988 attendee companies) for your competitors and your investors' portfolio companies. | **Slush 2026** tab |
 | **Meeting prep** | One note per investor, built only from Cala's graph. **In 30 seconds:** their stake in your space (and whether it blocks you), who you will likely meet, what to ask, what to hold back. Below it, folded: the partners' backgrounds, your competitor's ARR and headcount over time, how the fund invests, what Cala holds on *you*, their exits and who raised in your space this year. Your own notes and the outcome are saved per meeting. | **Prep** on any row |
-| **Investor profile** | A sourced write-up from Cala's knowledge search: focus, recent deals and partners, with links. | Open a row → **Investor profile** |
+| **Investor profile** | A sourced write-up from Cala's knowledge search: focus, recent deals and partners, with links. | On every shared meeting brief (`/brief/<id>`) |
 | **Meeting brief** | A shareable, printable page per investor with the verdict, evidence and question. | Open a row → **Share meeting brief** → `/brief/<id>` |
 | **Watchlist** | Follows your competitors' funding news for 90 days through Context.dev. | `/watch/<id>` |
 | **Voice** | **Listen** to any briefing, or **Play my day** for every meeting in order, in an ElevenLabs voice (the browser's own voice is the fallback). | Investors tab, brief page |
@@ -233,11 +233,12 @@ No account, wallet or key is needed in the web app. History lives in the browser
 - **The AI never invents facts.** Gemini's prompts contain only records FlipDD pulled from Cala, and every finding in the app links back to its sources. The Ask agent answers only from tool results and lists every call it made.
 - **Unknown is not clear.** Investors Cala can't find are **Not found in Cala**, and those with fewer than 5 records are **Too little data**. Neither is shown as clean.
 - **A refused key is loud.** A 403, or a 402 when credits run out, stops the run with an explanation (`REFUSED_MESSAGE`, `CREDITS_MESSAGE` in `src/lib/cala.ts`) and clears the rows rather than showing them as clear. The app then offers **Use your own Cala key**.
+- **A slow check stops cleanly.** When Cala's rate limit slows a fresh check down, it stops before Vercel's 300-second limit (270 seconds on the web, 250 on Telegram; `CHECK_BUDGET_MS`) and says so, instead of showing half-finished rows as verdicts. Everything fetched so far is cached, so running the same check again picks up where it stopped.
 - **Professional facts only.** Meeting prep shows partners' roles, past companies and schools, and strips birth years and personal details even when Cala's description includes them.
 - **The fullest record wins.** A firm can be a dozen Cala records (Seedcamp: the firm, "Seedcamp Limited", its GP and fund vehicles). FlipDD reads every exact match, lets the one with the most investments lead and merges the firm's own fund vehicles, so a thin duplicate can't hide a real stake.
 - **Limits.** 12 investors and 6 competitors per check (`src/app/api/analyze/route.ts`). The Ask agent makes at most 10 Cala calls, one slow query at a time. Concurrency is 5 Cala calls and 6 Gemini calls by default, and phone checks stop after 4 minutes.
 - **Webhooks are verified.** Twilio requests are checked with HMAC-SHA1 against `TWILIO_AUTH_TOKEN`, and the test matches Twilio's official library. Telegram updates must carry `TELEGRAM_WEBHOOK_SECRET`. Both lines can be limited to listed chats or callers (`TELEGRAM_ALLOWED_CHATS`, `TWILIO_ALLOWED_CALLERS`).
-- **Tests.** 38 unit tests cover scoring, name matching, round risk, news matching, Telegram formatting, spoken text and phone webhooks. All 38 passed on 14 November 2026.
+- **Tests.** 38 unit tests cover scoring, name matching, round risk, news matching, Telegram formatting, spoken text and phone webhooks. All 38 passed on 15 November 2026.
 
 ## What's real and what's simulated
 
@@ -269,6 +270,7 @@ npm run typecheck
 | `CALA_API_KEY` | All facts | Checks refuse to run |
 | `CALA_CACHE_HOURS` | How long Cala answers are reused (default 24) | 24 |
 | `CALA_MAX_CONCURRENT` | Parallel Cala calls (default 5) | 5 |
+| `CHECK_BUDGET_MS` | How long a check may run before it stops cleanly | 270000 on the web, 250000 on Telegram |
 | `GEMINI_API_KEY` | Competition judgement, meeting questions, the question agent, voice-note transcription | Lookalike check uses shared words; questions and voice notes are off |
 | `GEMINI_MODEL`, `GEMINI_MAX_CONCURRENT` | Force a model; parallel calls (default 6) | Newest Flash model; 6 |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_SPEED` | Briefings and Telegram voice notes (default voice Liam, 1.15×) | Browser voice in the app; Gemini speech on Telegram |
@@ -282,7 +284,7 @@ npm run typecheck
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ALLOWED_CHATS` | Telegram bot | Bot is off |
 | `TWILIO_AUTH_TOKEN`, `TWILIO_ACCOUNT_SID`, `TWILIO_ALLOWED_CALLERS`, `TWILIO_VOICE` | Phone line | Signatures are not checked |
 
-**Test status** (14 November 2026, after the meeting-prep and voice changes):
+**Test status** (15 November 2026):
 
 ```
 ℹ tests 38
@@ -353,22 +355,24 @@ src/
   components/                 MeetingPrepPanel, ContactDock, OwnCalaKey, panels, conflict map, live scan, voice buttons, glyphs
 scripts/                      warm, telegram polling and webhook, twilio setup
 tests/                        unit tests (node --test)
-video/                        the demo film (Remotion): script.json, scenes, capture and audio scripts
+video/                        the demo film pipeline (Remotion): script.json, scenes, live-site capture, voice, music,
+                              sound and timing scripts, real-run data, stock footage list (data/stock.json)
 public/brand/                 logos and illustrations
 ```
 
 ## Data and content
 
-FlipDD names real funds and companies only as Cala records them, with sources. A verdict says what the records show, such as "backed Lovable, February 2025". It never says what an investor intends. The landing page's showcase skips funds that should not be shown with a red verdict in public (`NO_NEGATIVE` in `src/lib/showcase.ts`).
+FlipDD names real funds and companies only as Cala records them, with sources. A verdict says what the records show, such as "led Lovable's Series B, December 2025". It never says what an investor intends. The landing page's showcase skips funds that should not be shown with a red verdict in public (`NO_NEGATIVE` in `src/lib/showcase.ts`).
 
 ## Pre-existing work and credits
 
 - **Scaffold:** a standard Next.js 14 app with Tailwind. No prior FlipDD code.
 - **Data:** [Cala](https://cala.ai) (knowledge graph, knowledge search and MCP server), [Context.dev](https://context.dev) (news).
-- **AI:** Google Gemini (judgement, questions, agent, transcription, speech).
+- **AI:** Google Gemini (judgement, questions, agent, transcription, fallback speech) and ElevenLabs (briefings, Play my day, Telegram voice notes).
 - **Telephony:** Telegram Bot API, and Twilio with Amazon Polly voices.
 - **Libraries:** `lucide-react` icons, `@vercel/functions`, `ffmpeg-static` (ffmpeg is LGPL/GPL licensed).
 - **Illustrations:** generated for this project.
+- **Demo film:** made with Remotion from real recordings of the live app and the bot's real replies. People on camera are stock footage from [Mixkit](https://mixkit.co) under its free licence; voices and music by ElevenLabs.
 
 ## License
 
