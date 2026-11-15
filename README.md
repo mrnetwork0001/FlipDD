@@ -6,7 +6,7 @@ Some investors take a meeting to hear a pitch from a company that competes with 
 
 Built at Junction 2026 for Cala's *Make Unicorns Real* challenge · App: [tryflipdd.vercel.app](https://tryflipdd.vercel.app) · Telegram: [@tryflipdd_bot](https://t.me/tryflipdd_bot) · Demo: [youtu.be/Aq8Ene2pl6U](https://youtu.be/Aq8Ene2pl6U) · Code: [github.com/mrnetwork0001/FlipDD](https://github.com/mrnetwork0001/FlipDD) (private, access on request)
 
-**Judges, start here:** open [tryflipdd.vercel.app/app](https://tryflipdd.vercel.app/app), press **Load example**, then **Check 8 investors**. It checks 8 real funds against Lovable on Cala's graph with no account, in about a second because the answers are cached. Press **Prep** on Creandum for the meeting note, or **Play my day** to hear the whole round. On a phone, message [@tryflipdd_bot](https://t.me/tryflipdd_bot) `/check Creandum, Northzone vs Lovable`, then `/prep Creandum`.
+**Judges, start here:** open [tryflipdd.vercel.app/app](https://tryflipdd.vercel.app/app), press **Load example**, then **Check 8 investors**. It checks 8 real funds against Lovable on Cala's graph with no account, in about a second because the answers are cached. Press **Prep** on Creandum for the meeting note, or **Play my day** to hear the whole round. On a phone, message [@tryflipdd_bot](https://t.me/tryflipdd_bot) `/check Creandum, Northzone vs Lovable`, then `/prep Creandum`, or call **+1 816 451 1318** and say "Creandum and Northzone against Lovable".
 
 ---
 
@@ -34,7 +34,7 @@ The whole list then gets a **round view** (`src/lib/roundRisk.ts`). It gives the
 | **Watchlist** | Follows your competitors' funding news for 90 days through Context.dev. | `/watch/<id>` |
 | **Voice** | **Listen** to any briefing, or **Play my day** for every meeting in order, in an ElevenLabs voice (the browser's own voice is the fallback). | Investors tab, brief page |
 | **Telegram** | `/check Creandum, Northzone vs Lovable`, then `/prep Creandum` for that meeting's note as text and an ElevenLabs voice note. Voice notes work too, and questions are answered from Cala's MCP server. | [@tryflipdd_bot](https://t.me/tryflipdd_bot), or the Telegram button bottom-right |
-| **Phone line** | Call a Twilio number, say who you're meeting, and hear the result. Follow-up questions work on the same call. | The phone button bottom-right, once a number is set |
+| **Phone line** | Call a Twilio number, say who you're meeting, and hear the result. Follow-up questions work on the same call. | Call **+1 816 451 1318**, or the phone button bottom-right |
 | **Your own Cala key** | If FlipDD's credits run out, or you want many checks, paste your own key. It stays in your browser and is sent only with your requests; anything already cached costs it nothing. | Under the form, or the button on a credits error |
 | **MCP server** | FlipDD's own checks as tools for Claude or Cursor: `check_investors`, `find_competitors`, `find_clean_investors`, `investor_profile`, `slush_check`, `watch_news`. | `/api/mcp` |
 
