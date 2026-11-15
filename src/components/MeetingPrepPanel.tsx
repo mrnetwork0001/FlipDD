@@ -6,19 +6,20 @@
 // the bottom is the founder's own, kept in this browser per check and investor.
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Copy, Loader2, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Copy, Loader2, X } from "lucide-react";
 import type { CompetitorSummary, InvestorResult } from "@/lib/types";
 import type { MeetingPrep, PrepPerson, PrepRival, PrepRow, PrepSeriesPoint } from "@/lib/prep";
 import { LEVEL_LABEL } from "@/lib/types";
+import { profileHref } from "./ResultParts";
 
-const money = (v: number, units = "USD") => {
+export const money = (v: number, units = "USD") => {
   const sym = units === "USD" ? "$" : units === "EUR" ? "€" : units === "GBP" ? "£" : `${units} `;
   if (v >= 1e9) return `${sym}${(v / 1e9).toFixed(v >= 1e10 ? 0 : 2).replace(/\.?0+$/, "")}B`;
   if (v >= 1e6) return `${sym}${(v / 1e6).toFixed(v >= 1e8 ? 0 : 1).replace(/\.0$/, "")}M`;
   if (v >= 1e3) return `${sym}${Math.round(v / 1e3)}K`;
   return `${sym}${v}`;
 };
-const month = (d?: string) => {
+export const month = (d?: string) => {
   if (!d) return "";
   const t = new Date(d.length === 7 ? `${d}-01` : d);
   return isNaN(t.getTime()) ? d : t.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
@@ -77,7 +78,7 @@ function Section({ n, title, children, aside, preview, fold = false }: { n: stri
   );
 }
 
-const Muted = ({ children }: { children: React.ReactNode }) => <p className="text-sm leading-relaxed text-muted">{children}</p>;
+export const Muted = ({ children }: { children: React.ReactNode }) => <p className="text-sm leading-relaxed text-muted">{children}</p>;
 
 function opener(p: PrepPerson): string | undefined {
   const past = p.past.find((x) => x.role);
@@ -87,9 +88,11 @@ function opener(p: PrepPerson): string | undefined {
   return undefined;
 }
 
-function Person({ p, withOpener }: { p: PrepPerson; withOpener: boolean }) {
+/** One person at the fund. plainRanges writes years as "2015 to 2019" (the investor profile page). */
+export function Person({ p, withOpener, plainRanges = false }: { p: PrepPerson; withOpener: boolean; plainRanges?: boolean }) {
+  const to = plainRanges ? " to " : "–";
   const line = [
-    p.past.length ? `Other roles: ${p.past.slice(0, 2).map((x) => `${x.role ? `${x.role}, ` : ""}${x.org}${x.from ? ` (${x.from}${x.to ? `–${x.to}` : ""})` : ""}`).join("; ")}` : "",
+    p.past.length ? `Other roles: ${p.past.slice(0, 2).map((x) => `${x.role ? `${x.role}, ` : ""}${x.org}${x.from ? ` (${x.from}${x.to ? `${to}${x.to}` : ""})` : ""}`).join("; ")}` : "",
     p.founded.length ? `Founded: ${p.founded.slice(0, 2).join(", ")}` : "",
     p.studied.length ? `Studied: ${p.studied.slice(0, 2).join(", ")}` : "",
   ].filter(Boolean);
@@ -115,7 +118,7 @@ function Person({ p, withOpener }: { p: PrepPerson; withOpener: boolean }) {
   );
 }
 
-function Curve({ points, fmt }: { points: PrepSeriesPoint[]; fmt: (v: number) => string }) {
+export function Curve({ points, fmt }: { points: PrepSeriesPoint[]; fmt: (v: number) => string }) {
   const max = Math.max(...points.map((p) => p.value), 1);
   return (
     <div className="mt-1.5 flex items-end gap-2">
@@ -130,7 +133,7 @@ function Curve({ points, fmt }: { points: PrepSeriesPoint[]; fmt: (v: number) =>
   );
 }
 
-function Rival({ r, comp }: { r: PrepRival; comp?: CompetitorSummary }) {
+export function Rival({ r, comp }: { r: PrepRival; comp?: CompetitorSummary }) {
   const lastRound = comp?.radar?.rounds?.[0];
   const has = r.arr.length || r.headcount.length || r.totalFunding || r.board.length || lastRound;
   if (!has) return null;
@@ -166,7 +169,7 @@ function Rival({ r, comp }: { r: PrepRival; comp?: CompetitorSummary }) {
   );
 }
 
-function Rows({ rows, cols }: { rows: PrepRow[]; cols: [string, string][] }) {
+export function Rows({ rows, cols }: { rows: PrepRow[]; cols: [string, string][] }) {
   return (
     <ul className="divide-y divide-line rounded-xl border border-line bg-white/60">
       {rows.map((r, i) => (
@@ -179,7 +182,7 @@ function Rows({ rows, cols }: { rows: PrepRow[]; cols: [string, string][] }) {
   );
 }
 
-function Slow({ state, rows, cols, empty, error }: { state: "loading" | "done" | "error"; rows: PrepRow[]; cols: [string, string][]; empty: string; error?: string }) {
+export function Slow({ state, rows, cols, empty, error }: { state: "loading" | "done" | "error"; rows: PrepRow[]; cols: [string, string][]; empty: string; error?: string }) {
   const [all, setAll] = useState(false);
   if (state === "loading")
     return <p className="flex items-center gap-2 text-sm text-muted"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Asking Cala&apos;s knowledge query. This one takes 30 to 60 seconds.</p>;
@@ -196,6 +199,10 @@ function Slow({ state, rows, cols, empty, error }: { state: "loading" | "done" |
     </>
   );
 }
+
+/** How their stake in the founder's space reads, as a pill. */
+export const SPACE_STYLE = { several: "bg-clear/10 text-clear ring-clear/30", one: "bg-caution/10 text-caution ring-caution/30", none: "bg-ink/5 text-ink/70 ring-ink/15" } as const;
+export const SPACE_LABEL = { several: "Not a blocker", one: "Expect the comparison", none: "First bet in your space" } as const;
 
 export default function MeetingPrepPanel({
   investor, competitors, startupName, description, runId, onClose,
@@ -239,8 +246,6 @@ export default function MeetingPrepPanel({
   }, [onClose]);
 
   const compByName = useMemo(() => new Map(competitors.map((c) => [c.name, c])), [competitors]);
-  const signalStyle = { several: "bg-clear/10 text-clear ring-clear/30", one: "bg-caution/10 text-caution ring-caution/30", none: "bg-ink/5 text-ink/70 ring-ink/15" } as const;
-  const signalLabel = { several: "Not a blocker", one: "Expect the comparison", none: "First bet in your space" } as const;
 
   const plain = () => {
     const lines = [`Meeting prep: ${investor.name}`, `${LEVEL_LABEL[investor.level]}. ${investor.headline}.`];
@@ -265,6 +270,16 @@ export default function MeetingPrepPanel({
             <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted"><span className="text-signal">[ meeting prep ]</span> from Cala&apos;s graph</p>
             <h2 className="mt-1 truncate font-serif text-4xl leading-tight">{investor.name}</h2>
             <p className="mt-0.5 text-sm text-ink/80">{investor.headline}</p>
+            {runId && (
+              <a
+                href={profileHref(runId, investor.input)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 inline-flex items-center gap-0.5 text-xs font-semibold text-muted underline-offset-2 transition hover:text-ink hover:underline"
+              >
+                Full profile <ArrowUpRight className="h-3 w-3" />
+              </a>
+            )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button type="button" onClick={() => navigator.clipboard?.writeText(plain()).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })} className="inline-flex items-center gap-1.5 rounded-full border border-ink/20 px-3 py-1.5 text-xs font-semibold hover:border-ink">
@@ -286,7 +301,7 @@ export default function MeetingPrepPanel({
               <div className="mt-5 rounded-2xl bg-night p-5 text-paper">
                 <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-paper/55">In 30 seconds</p>
                 <ul className="mt-3 space-y-2.5 text-[15px] leading-snug">
-                  <li><span className="text-paper/55">Their stake · </span><span className="font-semibold">{signalLabel[prep.space.signal]}.</span> {prep.space.text.split(/(?<=\.)\s/)[0]}</li>
+                  <li><span className="text-paper/55">Their stake · </span><span className="font-semibold">{SPACE_LABEL[prep.space.signal]}.</span> {prep.space.text.split(/(?<=\.)\s/)[0]}</li>
                   {lead && (
                     <li><span className="text-paper/55">Likely across the table · </span><span className="font-semibold">{lead.name}</span>{lead.role ? `, ${lead.role}` : ""}{leadPast ? `. Was ${leadPast.role} at ${leadPast.org}.` : "."}</li>
                   )}
@@ -300,7 +315,7 @@ export default function MeetingPrepPanel({
           {prep && (
             <>
               <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">The detail, from Cala</p>
-              <Section n="01" fold title="Their stake in your space" aside={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${signalStyle[prep.space.signal]}`}>{signalLabel[prep.space.signal]}</span>}>
+              <Section n="01" fold title="Their stake in your space" aside={<span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${SPACE_STYLE[prep.space.signal]}`}>{SPACE_LABEL[prep.space.signal]}</span>}>
                 <p className="text-[15px] leading-relaxed">{prep.space.text}</p>
                 {prep.space.holdings.length > 0 && (
                   <ul className="mt-2 flex flex-wrap gap-1.5">

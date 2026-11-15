@@ -9,7 +9,6 @@ import {
   Check,
   ChevronDown,
   Clock,
-  Copy,
   FileLock2,
   Loader2,
   MapPin,
@@ -36,15 +35,10 @@ import {
   type CompetitorSummary,
   type DiscoveredCompetitor,
   type FinderReport,
-  type InvestorKind,
   type RunDoc,
   type InvestorResult,
-  type Level,
-  type Reason,
   type SlushReport,
-  type SourceRef,
   type StepState,
-  type Tone,
 } from "@/lib/types";
 import ConflictMap from "@/components/ConflictMap";
 import SlushPanel from "@/components/SlushPanel";
@@ -52,6 +46,17 @@ import RoundRiskPanel from "@/components/RoundRiskPanel";
 import RadarPanel from "@/components/RadarPanel";
 import FinderPanel from "@/components/FinderPanel";
 import MeetingPrepPanel from "@/components/MeetingPrepPanel";
+import {
+  CopyButton,
+  Finding,
+  KIND_LABEL,
+  LEVEL_STYLE,
+  PathNode,
+  Reasons,
+  Sources,
+  fmtDate,
+  profileHref,
+} from "@/components/ResultParts";
 import ContactDock from "@/components/ContactDock";
 import OwnCalaKey from "@/components/OwnCalaKey";
 import { installOwnKeyFetch } from "@/lib/client/calaKey";
@@ -73,14 +78,6 @@ import { EXAMPLE_INPUT } from "@/lib/example";
 
 // ---------- small helpers ----------
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-function fmtDate(iso?: string): string {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  if (!m) return y;
-  const month = MONTHS[Number(m) - 1] || m;
-  return d ? `${Number(d)} ${month} ${y}` : `${month} ${y}`;
-}
 const splitList = (text: string) =>
   text
     .split(/[\n,;]+/)
@@ -97,29 +94,6 @@ const fmtElapsed = (ms: number) => {
   if (ms < 60_000) return `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`;
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-};
-
-const LEVEL_STYLE: Record<Level, { pill: string; bar: string }> = {
-  direct_high: { pill: "bg-signal text-white ring-signal", bar: "bg-signal" },
-  direct_moderate: { pill: "bg-signal/10 text-signal ring-signal/30", bar: "bg-signal/60" },
-  indirect: { pill: "bg-caution/10 text-caution ring-caution/30", bar: "bg-caution" },
-  possible: { pill: "bg-ink/5 text-ink/75 ring-ink/20", bar: "bg-ink/40" },
-  thin: { pill: "bg-transparent text-muted ring-line", bar: "bg-line" },
-  unresolved: { pill: "bg-transparent text-muted ring-line", bar: "bg-line" },
-  clear: { pill: "bg-clear/10 text-clear ring-clear/30", bar: "bg-clear" },
-};
-const KIND_LABEL: Record<InvestorKind, string> = {
-  fund: "VC fund",
-  angel: "Angel",
-  lender: "Lender",
-  grant: "Grant programme",
-  corporate: "Corporate investor",
-};
-const TONE_DOT: Record<Tone, string> = {
-  bad: "bg-signal",
-  warn: "bg-caution",
-  good: "bg-clear",
-  neutral: "bg-ink/25",
 };
 
 interface Step {
@@ -148,89 +122,8 @@ const STORAGE_KEY = "flipdd.form.v1";
 const MAX_COMPETITORS = 6;
 
 // ---------- pieces ----------
-
-function SourceLink({ source, compact }: { source: SourceRef; compact?: boolean }) {
-  const text = compact ? source.label : `${source.label}${source.date ? ` · ${fmtDate(source.date)}` : ""}`;
-  if (!source.url) return <span className="text-xs text-muted">{text}</span>;
-  return (
-    <a
-      href={source.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={source.title || source.url}
-      className="inline-flex items-center gap-0.5 rounded-md border border-line bg-white/60 px-1.5 py-0.5 font-mono text-[11px] text-ink/80 transition hover:border-ink hover:text-ink"
-    >
-      {text}
-      <ArrowUpRight className="h-3 w-3" />
-    </a>
-  );
-}
-
-function Sources({ sources }: { sources: SourceRef[] }) {
-  const linked = sources.filter((s) => s.url).slice(0, 4);
-  if (!linked.length) return null;
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-1.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">Sources</span>
-      {linked.map((s) => (
-        <SourceLink key={s.url} source={s} />
-      ))}
-    </div>
-  );
-}
-
-function Reasons({ reasons }: { reasons: Reason[] }) {
-  return (
-    <ul className="mt-2 space-y-1.5">
-      {reasons.map((r, i) => (
-        <li key={i} className="flex items-start gap-2.5 text-sm">
-          <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${TONE_DOT[r.tone]}`} />
-          <span className="leading-relaxed">
-            {r.text}
-            {r.source?.url && (
-              <span className="ml-1.5 inline-block align-middle">
-                <SourceLink source={r.source} compact />
-              </span>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function PathNode({ tone, children }: { tone: "ink" | "amber" | "red"; children: React.ReactNode }) {
-  const cls =
-    tone === "ink"
-      ? "border-ink bg-ink text-paper"
-      : tone === "amber"
-        ? "border-caution/40 bg-caution/10 text-caution"
-        : "border-signal/40 bg-signal/10 text-signal";
-  return <span className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold ${cls}`}>{children}</span>;
-}
-
-function Finding({
-  tone,
-  tag,
-  title,
-  children,
-}: {
-  tone: "red" | "amber" | "slate";
-  tag: string;
-  title: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const border = tone === "red" ? "border-l-signal" : tone === "amber" ? "border-l-caution" : "border-l-ink/30";
-  return (
-    <div className={`rounded-xl border border-line border-l-4 bg-white/50 p-4 ${border}`}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">{tag}</span>
-        <span className="font-semibold">{title}</span>
-      </div>
-      {children}
-    </div>
-  );
-}
+// SourceLink, Sources, Reasons, PathNode, Finding and CopyButton live in
+// components/ResultParts, shared with the investor profile page.
 
 function ContextLine({ activity }: { activity: Activity }) {
   const parts: React.ReactNode[] = [];
@@ -278,22 +171,30 @@ function ContextLine({ activity }: { activity: Activity }) {
   );
 }
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+/** The investor's full profile, in a new tab. A plain label until the check is saved. */
+function ProfileLink({ runId, result, running }: { runId: string; result: InvestorResult; running: boolean }) {
+  const look = "inline-flex items-center gap-0.5 px-1 py-1 text-xs font-semibold text-muted";
+  if (running || !runId) {
+    return (
+      <span
+        aria-disabled="true"
+        title={running ? "Available when the check finishes" : "Available once the check is saved"}
+        className={`${look} cursor-not-allowed opacity-40`}
+      >
+        Profile <ArrowUpRight className="h-3 w-3" />
+      </span>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={() => {
-        navigator.clipboard?.writeText(text).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      }}
-      className="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[11px] font-medium text-muted transition hover:border-ink hover:text-ink"
+    <a
+      href={profileHref(runId, result.input)}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Everything on ${result.name} in one page, in a new tab`}
+      className={`${look} underline-offset-2 transition hover:text-ink hover:underline`}
     >
-      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-      {copied ? "Copied" : "Copy"}
-    </button>
+      Profile <ArrowUpRight className="h-3 w-3" />
+    </a>
   );
 }
 
@@ -458,7 +359,9 @@ function InvestorRow({
         )}
       </button>
       {!pending && result.resolved && (
-        <span className="flex items-center pr-4">
+        // Phones: Prep on top, Profile under it. Wider screens: Profile to the left of Prep.
+        <span className="flex flex-col-reverse items-end justify-center gap-1 pr-4 sm:flex-row sm:items-center sm:gap-2">
+          <ProfileLink runId={runId} result={result} running={running} />
           <button
             type="button"
             onClick={onPrep}

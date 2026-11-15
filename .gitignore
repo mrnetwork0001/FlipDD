@@ -13,3 +13,6 @@ video/out/
 video/.cache/
 video/public/footage/
 video/public/stills/
+
+# demo film variants (compare, then promote the chosen one into video/)
+video-variants/
