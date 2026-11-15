@@ -325,13 +325,18 @@ async function runVoice(chatId: number, fileId: string, mime: string): Promise<v
 const KEY_NS = "tgkey";
 
 /** The chat's own Cala key if it set one, else FlipDD's. */
-async function calaKeyForChat(chatId: number): Promise<string> {
+/** The chat's saved key and when it was saved, if any (and still readable). */
+async function savedKey(chatId: number): Promise<{ key: string; t: number } | null> {
   const secret = keySecret();
-  if (secret) {
-    const box = await cacheRead<{ t: number; v: string }>(KEY_NS, chatSlot(chatId));
-    const own = box && Date.now() - box.t < KEY_TTL_DAYS * 86400_000 ? openKey(box.v, secret) : null;
-    if (own) return own;
-  }
+  if (!secret) return null;
+  const box = await cacheRead<{ t: number; v: string }>(KEY_NS, chatSlot(chatId));
+  const key = box && Date.now() - box.t < KEY_TTL_DAYS * 86400_000 ? openKey(box.v, secret) : null;
+  return key && box ? { key, t: box.t } : null;
+}
+
+async function calaKeyForChat(chatId: number): Promise<string> {
+  const own = await savedKey(chatId);
+  if (own) return own.key;
   const k = process.env.CALA_API_KEY?.trim();
   if (!k) throw new Error("CALA_API_KEY is not set");
   return k;
@@ -363,13 +368,32 @@ async function tryCalaKey(key: string): Promise<"ok" | "refused" | "credits" | "
 
 async function runKey(chatId: number, messageId: number | undefined, isPrivate: boolean, key: string): Promise<void> {
   // The key is in the chat: take the message down first, whatever happens next.
-  if (messageId) await tg("deleteMessage", { chat_id: chatId, message_id: messageId }).catch(() => undefined);
+  if (messageId && key) await tg("deleteMessage", { chat_id: chatId, message_id: messageId }).catch(() => undefined);
+  if (!isPrivate && !key) {
+    await sendLong(chatId, "Keys are private: send <code>/key</code> to me in a private chat.");
+    return;
+  }
   if (!isPrivate) {
     await sendLong(chatId, "Don't share a Cala key in a group. I deleted that message if I could. Send <code>/key</code> to me in a private chat instead, and consider rotating that key at console.cala.ai.");
     return;
   }
   if (!key) {
-    await sendLong(chatId, "Send your Cala key like this:\n<code>/key clsk_…</code>\nGet one at console.cala.ai. I delete the message as soon as I read it, and only checks in this chat use the key.");
+    const saved = await savedKey(chatId);
+    if (saved) {
+      const day = (ms: number) => new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      await sendLong(
+        chatId,
+        `🔑 You have a Cala key saved: <code>${esc(maskKey(saved.key))}</code>\n` +
+          `Saved ${day(saved.t)}, kept until ${day(saved.t + KEY_TTL_DAYS * 86400_000)}. Checks, notes and questions in this chat run on it.\n\n` +
+          `To replace it, send <code>/key clsk_…</code> with the new one. To remove it, send <code>/forgetkey</code>.`,
+      );
+    } else {
+      await sendLong(
+        chatId,
+        "No Cala key saved for this chat, so checks run on FlipDD's key.\n\n" +
+          "To use your own, paste it like this:\n<code>/key clsk_…</code>\nGet one at console.cala.ai. I delete the message as soon as I read it, and only this chat uses the key.",
+      );
+    }
     return;
   }
   if (!CALA_KEY_RE.test(key)) {
@@ -396,8 +420,14 @@ async function runKey(chatId: number, messageId: number | undefined, isPrivate: 
 }
 
 async function runForgetKey(chatId: number): Promise<void> {
+  const had = await savedKey(chatId);
   await cacheDelete(KEY_NS, chatSlot(chatId));
-  await sendLong(chatId, "Done: your Cala key is removed. Checks in this chat use FlipDD's key again.");
+  await sendLong(
+    chatId,
+    had
+      ? `Done: your Cala key <code>${esc(maskKey(had.key))}</code> is removed. Checks in this chat use FlipDD's key again.`
+      : "There was no Cala key saved for this chat. Checks run on FlipDD's key.",
+  );
 }
 
 export interface TelegramUpdate {
