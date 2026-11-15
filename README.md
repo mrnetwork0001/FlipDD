@@ -26,7 +26,7 @@ The whole list then gets a **round view** (`src/lib/roundRisk.ts`). It gives the
 | Feature | What it is | Where |
 | --- | --- | --- |
 | **Competitors** | Each competitor's recent rounds (amount, valuation, investors) and corporate events such as acquisitions, from Cala. | **Competitors** tab |
-| **Find investors** | Funds that back companies *near* yours (same buyers, different product) and pass the same conflict checks. Backers of direct rivals are dropped, and the dropped list is shown. The example considered 58 and kept 6. | **Find investors** tab |
+| **Find investors** | Funds that back companies *near* yours (same buyers, different product) and pass the same conflict checks. Backers of direct rivals are dropped, and the dropped list is shown. In the 14 November run it considered 58 funds and kept 6. | **Find investors** tab |
 | **Slush 2026** | Searches Cala's Slush 2026 event (2,988 attendee companies) for your competitors and your investors' portfolio companies. | **Slush 2026** tab |
 | **Meeting prep** | One note per investor, built only from Cala's graph. **In 30 seconds:** their stake in your space (and whether it blocks you), who you will likely meet, what to ask, what to hold back. Below it, folded: the partners' backgrounds, your competitor's ARR and headcount over time, how the fund invests, what Cala holds on *you*, their exits and who raised in your space this year. Your own notes and the outcome are saved per meeting. | **Prep** on any row |
 | **Investor profile** | A sourced write-up from Cala's knowledge search: focus, recent deals and partners, with links. | On every shared meeting brief (`/brief/<id>`) |
@@ -228,6 +228,8 @@ No account, wallet or key is needed in the web app. History lives in the browser
 - **Find investors:** 58 funds near the market, 6 clean, 8 dropped.
 - **Slush 2026:** two companies close to the example's product (Codeplain and DevAlly) are attending.
 
+The demo film and the pitch deck show this run. Cala's records keep changing, so the example gives different numbers on a later day. The run of 15 November 2026, which **Load example** shows now, puts round exposure at **35 out of 100**: 4 of the 8 meetings are within one step of Lovable. Creandum's stake is now dated from its lead of Lovable's Series B ($425M, December 2025), so it stays **Teaser only**.
+
 ## Safety and honesty
 
 - **The AI never invents facts.** Gemini's prompts contain only records FlipDD pulled from Cala, and every finding in the app links back to its sources. The Ask agent answers only from tool results and lists every call it made.
@@ -283,6 +285,8 @@ npm run typecheck
 | `FLIPDD_MCP_TOKEN` | Bearer token for `/api/mcp` | MCP is open |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ALLOWED_CHATS` | Telegram bot | Bot is off |
 | `TWILIO_AUTH_TOKEN`, `TWILIO_ACCOUNT_SID`, `TWILIO_ALLOWED_CALLERS`, `TWILIO_VOICE` | Phone line | Signatures are not checked |
+
+**The demo film** (optional) is built in `video/` with Remotion: `cd video && npm install`, then `npm run studio` to preview it. The voice, music and sound scripts (`npm run vo`, `music`, `sfx`) read `ELEVENLABS_API_KEY` from the environment or from `video/.env`, which git ignores. Stock clips are listed in `video/data/stock.json` and downloaded by `npm run stock`; they are not in the repository.
 
 **Test status** (15 November 2026):
 
@@ -363,6 +367,14 @@ public/brand/                 logos and illustrations
 ## Data and content
 
 FlipDD names real funds and companies only as Cala records them, with sources. A verdict says what the records show, such as "led Lovable's Series B, December 2025". It never says what an investor intends. The landing page's showcase skips funds that should not be shown with a red verdict in public (`NO_NEGATIVE` in `src/lib/showcase.ts`).
+
+## Team
+
+Built at Junction 2026 by three of us:
+
+- **Ifeanyichukwu Emmanuel O.**, product lead
+- **Ignas Simanavičius**, full-stack engineer
+- **Alexander Belik**, AI and data engineer
 
 ## Pre-existing work and credits
 
